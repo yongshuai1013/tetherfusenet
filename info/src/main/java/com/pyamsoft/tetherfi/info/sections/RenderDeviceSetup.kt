@@ -39,8 +39,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.pyamsoft.pydroid.core.LintIgnoreLongMethod
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.tetherfi.core.LintIgnoreCyclomaticComplexMethod
 import com.pyamsoft.tetherfi.info.InfoViewOptionsType
 import com.pyamsoft.tetherfi.info.InfoViewState
 import com.pyamsoft.tetherfi.info.MutableInfoViewState
@@ -62,6 +64,8 @@ private enum class DeviceSetupContentTypes {
   CONNECT,
 }
 
+@LintIgnoreLongMethod
+@LintIgnoreCyclomaticComplexMethod
 internal fun LazyListScope.renderDeviceSetup(
     itemModifier: Modifier = Modifier,
     appName: String,

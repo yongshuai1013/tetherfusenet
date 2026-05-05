@@ -17,7 +17,6 @@
 package com.pyamsoft.tetherfi.behavior
 
 import android.provider.Settings
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,40 +29,16 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
-import com.pyamsoft.pydroid.bus.EventBus
-import com.pyamsoft.pydroid.bus.EventConsumer
-import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
-import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.status.PermissionRequests
 import com.pyamsoft.tetherfi.status.PermissionResponse
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-
-internal class BehaviorInjector : ComposableInjector() {
-
-  @JvmField @Inject internal var viewModel: BehaviorViewModeler? = null
-
-  @JvmField @Inject internal var permissionRequestBus: EventBus<PermissionRequests>? = null
-
-  @JvmField @Inject internal var permissionResponseBus: EventConsumer<PermissionResponse>? = null
-
-  override fun onInject(activity: ComponentActivity) {
-    ObjectGraph.ActivityScope.retrieve(activity).plusBehavior().create().inject(this)
-  }
-
-  override fun onDispose() {
-    viewModel = null
-    permissionRequestBus = null
-    permissionResponseBus = null
-  }
-}
 
 /** Sets up permission request interaction */
 @Composable

@@ -33,7 +33,6 @@ const val BUFFER_SIZE = 4096L
  */
 @CheckResult
 @OptIn(InternalAPI::class)
-@LintIgnoreTooGenericExceptionCaught
 internal suspend inline fun ByteReadChannel.copyToWithActionBeforeWrite(
     dst: ByteWriteChannel,
     limit: Long,
@@ -60,7 +59,7 @@ internal suspend inline fun ByteReadChannel.copyToWithActionBeforeWrite(
       remaining -= count
       dst.flush()
     }
-  } catch (cause: Throwable) {
+  } catch (@LintIgnoreTooGenericExceptionCaught cause: Throwable) {
     cancel(cause)
     dst.close(cause)
     throw cause

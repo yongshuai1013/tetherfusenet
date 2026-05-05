@@ -127,7 +127,6 @@ internal constructor(private val enforcer: ThreadEnforcer, context: Context) :
     )
   }
 
-  @LintIgnoreTooGenericExceptionCaught
   private inline fun <T : Any> setPreference(
       key: Preferences.Key<T>,
       fallbackValue: T,
@@ -136,7 +135,7 @@ internal constructor(private val enforcer: ThreadEnforcer, context: Context) :
     scope.launch(context = Dispatchers.IO) {
       try {
         preferences.edit { it[key] = value(it) }
-      } catch (e: Throwable) {
+      } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
         e.ifNotCancellation { preferences.edit { it[key] = fallbackValue } }
       }
     }

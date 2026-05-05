@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.server.proxy
 
+import com.pyamsoft.pydroid.core.LintIgnoreTooGenericExceptionCaught
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.SocketCreator
@@ -95,7 +96,7 @@ internal inline fun <T> Socket.usingConnection(
         val writer = this
         return block(reader, writer)
       }
-    } catch (e: Throwable) {
+    } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
       e.ifNotCancellation {
         reader.cancel(e)
         throw e

@@ -142,8 +142,6 @@ internal constructor(
    * This function must ALWAYS call connection.usingConnection {} or else a socket may potentially
    * leak
    */
-  // TODO move when valid for Expression
-  @LintIgnoreTooGenericExceptionCaught
   private suspend fun runSession(
       scope: CoroutineScope,
       timeout: ServerSocketTimeout,
@@ -167,7 +165,7 @@ internal constructor(
             socketTracker = socketTracker,
         )
       }
-    } catch (e: Throwable) {
+    } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
       e.ifNotCancellation {
         if (e is SocketTimeoutException) {
           warnLog { "Proxy:Server socket timeout! $proxyConnectionInfo" }
@@ -264,8 +262,6 @@ internal constructor(
     throw IllegalStateException("TCP Proxy failed to grab a socket correctly")
   }
 
-  // TODO Move when valid for Expression
-  @LintIgnoreTooGenericExceptionCaught
   override suspend fun runServer(lock: Locker.Lock, tracker: SocketTracker, server: ServerSocket) =
       withContext(context = serverDispatcher.primary) {
         val addr = server.localAddress
@@ -304,7 +300,7 @@ internal constructor(
                       connection = connection,
                       socketTracker = tracker,
                   )
-                } catch (e: Throwable) {
+                } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
                   e.ifNotCancellation { errorLog(e) { "Error during server socket accept" } }
                 } finally {
                   connection.dispose()

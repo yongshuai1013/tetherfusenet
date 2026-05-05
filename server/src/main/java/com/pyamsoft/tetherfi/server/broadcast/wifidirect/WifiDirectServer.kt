@@ -30,6 +30,7 @@ import android.os.Build
 import android.os.Looper
 import androidx.annotation.CheckResult
 import androidx.core.content.getSystemService
+import com.pyamsoft.pydroid.core.LintIgnoreTooGenericExceptionCaught
 import com.pyamsoft.pydroid.core.LintIgnoreTooManyFunctions
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
@@ -53,6 +54,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 @Singleton
 internal class WifiDirectServer
@@ -117,13 +119,13 @@ internal constructor(
   private suspend fun resolveCurrentGroup(channel: Channel): WifiP2pGroup? {
     enforcer.assertOffMainThread()
 
-    return suspendCoroutine { cont ->
+    return suspendCancellableCoroutine { cont ->
       try {
         wifiP2PManager.requestGroupInfo(channel) {
           // We are still on the Main Thread here, so don't unpack anything yet.
           cont.resume(it)
         }
-      } catch (e: Throwable) {
+      } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
         Timber.e(e) { "Error getting WiFi Direct Group Info" }
         cont.resumeWithException(e)
       }
@@ -134,13 +136,13 @@ internal constructor(
   private suspend fun resolveConnectionInfo(channel: Channel): WifiP2pInfo? {
     enforcer.assertOffMainThread()
 
-    return suspendCoroutine { cont ->
+    return suspendCancellableCoroutine { cont ->
       try {
         wifiP2PManager.requestConnectionInfo(channel) {
           // We are still on the Main Thread here, so don't unpack anything yet.
           cont.resume(it)
         }
-      } catch (e: Throwable) {
+      } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
         Timber.e(e) { "Error getting WiFi Direct Connection Info" }
         cont.resumeWithException(e)
       }
@@ -238,7 +240,7 @@ internal constructor(
     val channel = createChannel()
     if (channel == null) {
       Timber.w { "Failed to create a Wi-Fi direct channel" }
-      throw RuntimeException("Unable to create Wi-Fi Direct Channel")
+      throw WifiDirectChannelCreationException()
     }
 
     try {
@@ -255,7 +257,7 @@ internal constructor(
         connectChannel(channel)
         Timber.d { "New Wi-Fi group connection created!" }
       }
-    } catch (e: Throwable) {
+    } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
       e.ifNotCancellation {
         Timber.e(e) { "Failed to connect Wi-Fi direct group" }
         throw e
@@ -333,6 +335,9 @@ internal constructor(
     scope.launch(context = Dispatchers.Default) { register.register() }
   }
 
+  class WifiDirectChannelCreationException :
+      RuntimeException("Unable to create Wi-Fi Direct Channel")
+
   companion object {
 
     @JvmStatic
@@ -340,7 +345,7 @@ internal constructor(
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
         try {
           s.close()
-        } catch (e: Throwable) {
+        } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
           Timber.e(e) { "Failed to close WifiP2P Channel" }
         }
       }

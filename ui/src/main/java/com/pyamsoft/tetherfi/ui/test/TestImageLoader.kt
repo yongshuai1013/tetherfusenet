@@ -34,6 +34,7 @@ import coil3.request.ErrorResult
 import coil3.request.ImageRequest
 import coil3.request.ImageResult
 import coil3.request.SuccessResult
+import com.pyamsoft.pydroid.core.LintIgnoreEmptyFunctionBlock
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
@@ -59,8 +60,7 @@ private class TestImageLoader(context: Context) : ImageLoader {
               )
             }
 
-        @Suppress("detekt:EmptyFunctionBlock")
-        override fun dispose() {}
+        @LintIgnoreEmptyFunctionBlock override fun dispose() {}
       }
 
   override val components = ComponentRegistry()
@@ -91,9 +91,7 @@ private class TestImageLoader(context: Context) : ImageLoader {
     return ImageLoader.Builder(context)
   }
 
-  @Suppress("detekt:EmptyFunctionBlock")
-  override fun shutdown() {
-  }
+  @LintIgnoreEmptyFunctionBlock override fun shutdown() {}
 }
 
 /** Only use for tests/previews */

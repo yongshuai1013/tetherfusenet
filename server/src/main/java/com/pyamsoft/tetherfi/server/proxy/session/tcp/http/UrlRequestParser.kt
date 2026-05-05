@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.server.proxy.session.tcp.http
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.core.LintIgnoreSwallowedException
 import com.pyamsoft.pydroid.core.LintIgnoreTooGenericExceptionCaught
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
@@ -109,9 +110,6 @@ internal constructor(
    * If the URL does not include the port, determine it from the protocol or just assume it is HTTP
    */
   @CheckResult
-  // TODO move when supported on Expression
-  @LintIgnoreTooGenericExceptionCaught
-  @Suppress("detekt:SwallowedException")
   private fun getUrlAndPort(methodData: MethodData): DestinationInfo? {
 
     // This could be anything like the following
@@ -184,13 +182,11 @@ internal constructor(
           file = file,
           proto = protocol,
       )
-    } catch (e: Throwable) {
+    } catch (@LintIgnoreSwallowedException @LintIgnoreTooGenericExceptionCaught _: Throwable) {
       return null
     }
   }
 
-  // TODO move when supported on Expression
-  @LintIgnoreTooGenericExceptionCaught
   override fun parse(line: String): HttpProxyRequest {
     try {
       val methodData = getMethodAndUrlString(line)
@@ -231,7 +227,7 @@ internal constructor(
               port = urlData.port,
           )
           .also { Timber.d { "Proxy Request: $it" } }
-    } catch (e: Throwable) {
+    } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
       e.ifNotCancellation {
         Timber.e(e) { "Unable to parse request: $line" }
         return HttpProxyRequest(

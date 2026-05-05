@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
+import com.pyamsoft.pydroid.core.LintIgnoreTooGenericExceptionCaught
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
@@ -46,7 +47,7 @@ class ProxyTileActivity : ComponentActivity() {
     if (rawValue != null) {
       try {
         return ProxyTileAction.valueOf(rawValue)
-      } catch (e: Throwable) {
+      } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
         Timber.e(e) { "Error parsing ProxyTileActivity.Action param: $rawValue" }
       }
     }

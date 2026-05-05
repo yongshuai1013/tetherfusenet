@@ -31,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.pyamsoft.pydroid.core.LintIgnoreLongMethod
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.behavior.BehaviorViewState
 import com.pyamsoft.tetherfi.behavior.R
@@ -44,6 +45,7 @@ private enum class ContentTypes {
   BEHAVIOR_TWEAKS,
 }
 
+@LintIgnoreLongMethod
 internal fun LazyListScope.renderTweaks(
     itemModifier: Modifier = Modifier,
     appName: String,

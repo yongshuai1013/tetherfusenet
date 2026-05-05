@@ -58,8 +58,6 @@ protected constructor(
 ) : SOCKSImplementation<R> {
 
   @LintIgnoreLongMethod
-  // TODO remove once supported for Expressions
-  @LintIgnoreTooGenericExceptionCaught
   private suspend fun connect(
       scope: CoroutineScope,
       socketCreator: SocketCreator,
@@ -127,7 +125,7 @@ protected constructor(
                         // Track this socket for when we fully shut down
                         socketTracker.track(it)
                       }
-                } catch (e: Throwable) {
+                } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
                   if (e is TimeoutCancellationException) {
                     Timber.w { "Timeout while waiting for socket connect()" }
                     responder.sendRefusal()
@@ -152,7 +150,7 @@ protected constructor(
                     addressType = addressType,
                     remote = remote.cast<InetSocketAddress>(),
                 )
-              } catch (e: Throwable) {
+              } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
                 e.ifNotCancellation {
                   Timber.e(e) { "Error sending connect() SUCCESS notification" }
                   return@create
@@ -180,8 +178,6 @@ protected constructor(
       )
 
   @LintIgnoreLongMethod
-  // TODO remove once supported for Expressions
-  @LintIgnoreTooGenericExceptionCaught
   private suspend fun bind(
       scope: CoroutineScope,
       socketCreator: SocketCreator,
@@ -247,7 +243,7 @@ protected constructor(
 
                         boundSocket.await()
                       }
-                } catch (e: Throwable) {
+                } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
                   if (e is TimeoutCancellationException) {
                     Timber.w { "Timeout while waiting for socket bind()" }
                     responder.sendRefusal()
@@ -266,7 +262,6 @@ protected constructor(
             // Track this socket for when we fully shut down
             socketTracker.track(bound)
 
-            // TODO Once supported on Expressions @LintIgnoreTooGenericExceptionCaught
             bound.use { socket ->
               val hostAddress = socket.remoteAddress.cast<InetSocketAddress>().requireNotNull()
               if (hostAddress.toJavaAddress() != destinationAddress) {
@@ -280,7 +275,7 @@ protected constructor(
                     addressType = addressType,
                     bound = hostAddress,
                 )
-              } catch (e: Throwable) {
+              } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
                 e.ifNotCancellation {
                   Timber.e(e) { "Error sending bind() SUCCESS notification" }
                   responder.sendError()

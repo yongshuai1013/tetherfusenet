@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 pyamsoft
+ * Copyright 2026 pyamsoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.core
+package com.pyamsoft.networktest
 
-import androidx.test.filters.SmallTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlinx.coroutines.test.runTest
-
-@SmallTest
-class AndroidSanity {
-
-  @Test fun sanity() = runTest { assertEquals(3 + 3, 6) }
-}
+@Target(AnnotationTarget.EXPRESSION)
+@Retention(AnnotationRetention.SOURCE)
+annotation class LintIgnoreLoopWithTooManyJumpStatements

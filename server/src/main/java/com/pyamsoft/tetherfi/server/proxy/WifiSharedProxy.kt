@@ -20,6 +20,7 @@ package com.pyamsoft.tetherfi.server.proxy
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
+import com.pyamsoft.pydroid.core.LintIgnoreLongMethod
 import com.pyamsoft.pydroid.core.LintIgnoreTooGenericExceptionCaught
 import com.pyamsoft.pydroid.core.LintIgnoreTooManyFunctions
 import com.pyamsoft.pydroid.core.ThreadEnforcer
@@ -111,8 +112,6 @@ internal constructor(
     shutdownProxyServerWithCause(e)
   }
 
-  // TODO move when supported on Expression
-  @LintIgnoreTooGenericExceptionCaught
   private suspend fun beginProxyLoop(
       type: SharedProxy.Type,
       lock: Locker.Lock,
@@ -156,7 +155,7 @@ internal constructor(
               },
               onError = { e -> e.ifNotCancellation { handleServerLoopError(e = e, type = type) } },
           )
-    } catch (e: Throwable) {
+    } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
       e.ifNotCancellation { handleServerLoopError(e = e, type = type) }
     }
   }
@@ -325,6 +324,7 @@ internal constructor(
     cancelAndJoin()
   }
 
+  @LintIgnoreLongMethod
   override suspend fun start(
       lock: Locker.Lock,
       connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>,

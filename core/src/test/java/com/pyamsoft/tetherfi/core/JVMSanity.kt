@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 pyamsoft
+ * Copyright 2025 pyamsoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status
+package com.pyamsoft.tetherfi.core
 
-internal enum class StatusSize {
-  SMALL,
-  NORMAL,
+import kotlin.test.assertEquals
+import kotlinx.coroutines.test.runTest
+import org.junit.Test
+
+class JVMSanity {
+
+  @Test fun sanity() = runTest { assertEquals(2 + 2, 4) }
 }

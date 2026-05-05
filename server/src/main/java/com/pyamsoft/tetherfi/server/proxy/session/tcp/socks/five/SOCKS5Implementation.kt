@@ -112,7 +112,6 @@ internal constructor(
             appScope.launch(context = Dispatchers.IO) { onError(it) }
           },
           onBuild = { builder ->
-            @LintIgnoreTooGenericExceptionCaught
             val bound =
                 try {
                   builder
@@ -141,7 +140,7 @@ internal constructor(
                         // Track server socket
                         socketTracker.track(it)
                       }
-                } catch (e: Throwable) {
+                } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
                   if (e is TimeoutCancellationException) {
                     Timber.w { "Timeout while waiting for socket udp_assoc()" }
                     responder.sendRefusal()

@@ -28,6 +28,8 @@ import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
+import com.pyamsoft.pydroid.core.LintIgnoreMaxLineLength
+import com.pyamsoft.pydroid.core.LintIgnoreTooGenericExceptionCaught
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.ui.app.PYDroidActivityDelegate
 import com.pyamsoft.pydroid.ui.app.installPYDroid
@@ -70,9 +72,12 @@ class MainActivity : ComponentActivity() {
                   override val changelog = buildChangeLog {
                     //                    feature("Add unique Activities to turn the hotspot On or
                     // Off.")
+                    @LintIgnoreMaxLineLength
                     feature(
                         "New Netty based engine for HTTP proxy. The new engine is OFF by default. You must opt-in to use it. It will become the default in the next version"
                     )
+
+                    @LintIgnoreMaxLineLength
                     feature(
                         "New Netty based engine for SOCKS proxy. The new engine is OFF by default. You must opt-in to use it. It will become the default in the next version"
                     )
@@ -107,7 +112,7 @@ class MainActivity : ComponentActivity() {
     try {
       val intent = Intent(action, "package:${packageName}".toUri())
       startActivity(intent)
-    } catch (e: Throwable) {
+    } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
       Timber.e(e) { "Failed specific intent for $action" }
       val intent = Intent(action)
       startActivity(intent)

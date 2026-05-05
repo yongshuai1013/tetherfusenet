@@ -48,6 +48,8 @@ class MainActivity : ComponentActivity() {
           val allIfaces: Enumeration<NetworkInterface>? = NetworkInterface.getNetworkInterfaces()
           if (allIfaces != null) {
             val newLines = mutableListOf<String>()
+
+            @LintIgnoreLoopWithTooManyJumpStatements
             for (iface in allIfaces) {
               val name = iface.name.orEmpty()
               if (name.isBlank()) {

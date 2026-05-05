@@ -16,36 +16,19 @@
 
 package com.pyamsoft.tetherfi.tile
 
-import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
-import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
-import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-
-internal class ProxyTileInjector : ComposableInjector() {
-
-  @Inject @JvmField internal var viewModel: ProxyTileViewModeler? = null
-
-  override fun onInject(activity: ComponentActivity) {
-    ObjectGraph.ApplicationScope.retrieve(activity).plusTile().create().inject(this)
-  }
-
-  override fun onDispose() {
-    viewModel = null
-  }
-}
 
 /** On mount hooks */
 @Composable
@@ -66,7 +49,7 @@ private fun MountHooks(
       viewModel,
       tileAction,
   ) {
-    delay(500)
+    delay(timeMillis = 500)
     when (tileAction) {
       ProxyTileAction.TOGGLE -> handleToggleProxy()
       ProxyTileAction.START -> handleStartProxy()

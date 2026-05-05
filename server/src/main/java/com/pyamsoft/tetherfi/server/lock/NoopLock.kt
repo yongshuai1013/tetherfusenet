@@ -16,16 +16,17 @@
 
 package com.pyamsoft.tetherfi.server.lock
 
-@Suppress("detekt:EmptyFunctionBlock")
+import com.pyamsoft.pydroid.core.LintIgnoreEmptyFunctionBlock
+
 internal object NoopLock : Locker.Lock {
 
   override suspend fun acquire(): Locker.Lock.Releaser {
     return NoopReleaser
   }
 
-  override suspend fun release() {}
+  @LintIgnoreEmptyFunctionBlock override suspend fun release() {}
 
   private object NoopReleaser : Locker.Lock.Releaser {
-    override suspend fun release() {}
+    @LintIgnoreEmptyFunctionBlock override suspend fun release() {}
   }
 }

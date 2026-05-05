@@ -20,13 +20,13 @@ import android.app.Application
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bootstrap.libraries.OssLibraries
 import com.pyamsoft.pydroid.bootstrap.libraries.OssLicenses
+import com.pyamsoft.pydroid.core.LintIgnoreMaxLineLength
 import com.pyamsoft.pydroid.ui.ModuleProvider
 import com.pyamsoft.pydroid.ui.PYDroid
 import com.pyamsoft.pydroid.ui.debug.InAppDebugStatus
 import com.pyamsoft.pydroid.ui.installPYDroid
 import com.pyamsoft.pydroid.util.isDebugMode
 import com.pyamsoft.tetherfi.core.GITHUB_URL
-import com.pyamsoft.tetherfi.core.LintIgnoreMaxLineLength
 import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
 import com.pyamsoft.tetherfi.core.TERMS_CONDITIONS_URL
 import kotlinx.coroutines.CoroutineName

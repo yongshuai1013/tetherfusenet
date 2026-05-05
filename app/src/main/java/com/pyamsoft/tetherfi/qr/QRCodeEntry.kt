@@ -18,7 +18,6 @@ package com.pyamsoft.tetherfi.qr
 
 import android.content.res.Configuration
 import android.graphics.Bitmap
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -33,65 +32,42 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil3.ImageLoader
+import com.pyamsoft.pydroid.core.LintIgnoreMagicNumber
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
-import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
-import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.ui.R
 import com.pyamsoft.tetherfi.ui.dialog.DialogToolbar
 import com.pyamsoft.tetherfi.ui.qr.QRCodeScreen
-import com.pyamsoft.tetherfi.ui.qr.QRCodeViewModeler
 import com.pyamsoft.tetherfi.ui.qr.QRCodeViewState
 import com.pyamsoft.tetherfi.ui.test.createNewTestImageLoader
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.annotations.TestOnly
 
-internal class QRCodeInjector(
-    private val ssid: String,
-    private val password: String,
-) : ComposableInjector() {
-
-  @JvmField @Inject internal var viewModel: QRCodeViewModeler? = null
-
-  @JvmField @Inject internal var imageLoader: ImageLoader? = null
-
-  override fun onInject(activity: ComponentActivity) {
-    ObjectGraph.ActivityScope.retrieve(activity)
-        .plusQR()
-        .create(
-            ssid = ssid,
-            password = password,
-        )
-        .inject(this)
-  }
-
-  override fun onDispose() {
-    viewModel = null
-    imageLoader = null
-  }
-}
-
 @Composable
 private fun rememberQRCodeWidth(): Dp {
+  val window = LocalWindowInfo.current
+
   val configuration = LocalConfiguration.current
   val orientation = configuration.orientation
-  val width = configuration.screenWidthDp
+  val width = window.containerSize.width
   return remember(
       orientation,
       width,
   ) {
     if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+      @LintIgnoreMagicNumber
       width.dp / 4 * 3
     } else {
+      @LintIgnoreMagicNumber
       width.dp / 3
     }
   }

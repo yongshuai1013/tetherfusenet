@@ -16,7 +16,20 @@
 
 package com.pyamsoft.tetherfi.status
 
-internal enum class StatusSize {
-  SMALL,
-  NORMAL,
+import androidx.activity.ComponentActivity
+import com.pyamsoft.pydroid.ui.inject.ComposableInjector
+import com.pyamsoft.tetherfi.ObjectGraph
+import javax.inject.Inject
+
+internal class StatusInjector : ComposableInjector() {
+
+  @JvmField @Inject internal var viewModel: StatusViewModeler? = null
+
+  override fun onInject(activity: ComponentActivity) {
+    ObjectGraph.ActivityScope.retrieve(activity).plusStatus().create().inject(this)
+  }
+
+  override fun onDispose() {
+    viewModel = null
+  }
 }

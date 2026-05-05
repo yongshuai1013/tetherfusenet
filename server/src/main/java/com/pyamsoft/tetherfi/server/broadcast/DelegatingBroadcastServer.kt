@@ -20,6 +20,7 @@ package com.pyamsoft.tetherfi.server.broadcast
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
+import com.pyamsoft.pydroid.core.LintIgnoreTooGenericExceptionCaught
 import com.pyamsoft.pydroid.core.LintIgnoreTooManyFunctions
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.cast
@@ -159,7 +160,7 @@ internal constructor(
             launchProxy = true
 
             withLockInitializeNetwork(source = source)
-          } catch (e: Throwable) {
+          } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
             e.ifNotCancellation {
               Timber.w { "Error during broadcast startup, stop network" }
 
@@ -526,7 +527,7 @@ internal constructor(
             // which is suspended until the proxy server loop dies
             startNetwork(lock)
           }
-        } catch (e: Throwable) {
+        } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
           e.ifNotCancellation {
             Timber.e(e) { "Error starting Network" }
             shutdownForStatus(RunningStatus.HotspotError(e), clearErrorStatus = false)

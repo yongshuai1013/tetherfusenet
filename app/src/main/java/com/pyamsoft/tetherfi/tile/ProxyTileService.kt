@@ -24,6 +24,8 @@ import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.core.LintIgnoreSwallowedException
+import com.pyamsoft.pydroid.core.LintIgnoreTooGenericExceptionCaught
 import com.pyamsoft.pydroid.core.LintIgnoreTooManyFunctions
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
@@ -41,7 +43,9 @@ import kotlinx.coroutines.cancel
 internal class ProxyTileService internal constructor() : TileService() {
 
   @Inject @JvmField internal var tileHandler: TileHandler? = null
+
   @Inject @JvmField internal var tileActivityLauncher: ProxyTileActivityLauncher? = null
+
   @Inject @JvmField internal var tileStatus: TileStatus? = null
 
   private var scope: CoroutineScope? = null
@@ -66,7 +70,7 @@ internal class ProxyTileService internal constructor() : TileService() {
       // Make sure we call this or nothing actually happens
       try {
         tile.updateTile()
-      } catch (e: Throwable) {
+      } catch (@LintIgnoreSwallowedException @LintIgnoreTooGenericExceptionCaught e: Throwable) {
         // Sometimes this just crashes because of an NPE
         // fun I know.
         Timber.e(e) { "Unable to update tile :(" }
@@ -87,21 +91,25 @@ internal class ProxyTileService internal constructor() : TileService() {
         title = "ERROR"
         description = status.throwable.message ?: "An unexpected error occurred"
       }
+
       is RunningStatus.NotRunning -> {
         state = Tile.STATE_INACTIVE
         title = getString(R.string.app_name)
         description = "Click to start Hotspot"
       }
+
       is RunningStatus.Running -> {
         state = Tile.STATE_ACTIVE
         title = getString(R.string.app_name)
         description = "Hotspot Running"
       }
+
       is RunningStatus.Starting -> {
         state = Tile.STATE_INACTIVE
         title = getString(R.string.app_name)
         description = "Starting..."
       }
+
       is RunningStatus.Stopping -> {
         state = Tile.STATE_ACTIVE
         title = getString(R.string.app_name)
@@ -163,7 +171,7 @@ internal class ProxyTileService internal constructor() : TileService() {
                 service = this,
             )
             .inject(this)
-      } catch (e: Throwable) {
+      } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
         Timber.e(e) { "Failed to inject Tile handler, application not ready!" }
       }
     }
@@ -265,7 +273,7 @@ internal class ProxyTileService internal constructor() : TileService() {
             appContext,
             component,
         )
-      } catch (e: Throwable) {
+      } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
         // https://github.com/pyamsoft/tetherfusenet/issues/229
         Timber.e(e) { "Error trying to update Tile state. Android OS error?" }
       }

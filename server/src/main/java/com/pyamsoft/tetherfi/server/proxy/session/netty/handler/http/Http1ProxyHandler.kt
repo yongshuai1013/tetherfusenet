@@ -20,6 +20,7 @@ package com.pyamsoft.tetherfi.server.proxy.session.netty.handler.http
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.LintIgnoreLongMethod
+import com.pyamsoft.pydroid.core.LintIgnoreMagicNumber
 import com.pyamsoft.pydroid.core.LintIgnoreTooManyFunctions
 import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.tetherfi.core.Timber
@@ -461,6 +462,7 @@ private constructor(
       }
 
       // TODO common code for port validation
+      @LintIgnoreMagicNumber
       if (defaultPort !in 0..65335) {
         Timber.w { "Invalid default port: $defaultPort" }
         return null

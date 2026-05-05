@@ -24,6 +24,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import androidx.annotation.CheckResult
 import androidx.core.content.getSystemService
+import com.pyamsoft.pydroid.core.LintIgnoreTooGenericExceptionCaught
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.core.Timber
@@ -184,7 +185,7 @@ internal constructor(
         // IF you are connected to a VPN, binding to a socket may not work unless you "whitelist"
         // TetherFuseNet in your VPN settings
         network.bindSocket(datagram)
-      } catch (e: Throwable) {
+      } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
         Timber.w {
           "Error binding datagram socket to network $network, continue anyway!: ${e.message.orEmpty()}"
         }
@@ -197,7 +198,7 @@ internal constructor(
         // IF you are connected to a VPN, binding to a socket may not work unless you "whitelist"
         // TetherFuseNet in your VPN settings
         network.bindSocket(channel.socket())
-      } catch (e: Throwable) {
+      } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
         Timber.w {
           "Error binding socket to network $network, continue anyway!: ${e.message.orEmpty()}"
         }

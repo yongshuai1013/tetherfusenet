@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.pyamsoft.pydroid.core.LintIgnoreLongMethod
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
 import com.pyamsoft.tetherfi.info.R
@@ -46,6 +47,7 @@ private enum class AppSetupContentTypes {
   START,
 }
 
+@LintIgnoreLongMethod
 internal fun LazyListScope.renderAppSetup(
     itemModifier: Modifier = Modifier,
     appName: String,

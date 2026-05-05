@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -42,14 +41,13 @@ internal fun DisplayStatus(
     onClickShowError: (() -> Unit)? = null,
 ) {
   val text =
-        when (status) {
-          is RunningStatus.Error ->
-              status.throwable.message ?: stringResource(R.string.status_error)
-          is RunningStatus.NotRunning -> stringResource(R.string.status_not_running)
-          is RunningStatus.Running -> stringResource(R.string.status_running)
-          is RunningStatus.Starting -> stringResource(R.string.status_starting)
-          is RunningStatus.Stopping -> stringResource(R.string.status_stopping)
-        }
+      when (status) {
+        is RunningStatus.Error -> status.throwable.message ?: stringResource(R.string.status_error)
+        is RunningStatus.NotRunning -> stringResource(R.string.status_not_running)
+        is RunningStatus.Running -> stringResource(R.string.status_running)
+        is RunningStatus.Starting -> stringResource(R.string.status_starting)
+        is RunningStatus.Stopping -> stringResource(R.string.status_stopping)
+      }
 
   val textErrorColor = MaterialTheme.colorScheme.onErrorContainer
   val textRunningColor = MaterialTheme.colorScheme.onTertiaryContainer

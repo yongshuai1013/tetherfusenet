@@ -57,9 +57,7 @@ internal constructor(
     val isHttpReady = config.httpPort && config.isHttpEnabled
     val isSocksReady = config.socksPort && config.isSocksEnabled
     val isProxyReady = isHttpReady && isSocksReady
-    val isWifiDirectReady = config.ssid &&
-        config.password &&
-        config.band
+    val isWifiDirectReady = config.ssid && config.password && config.band
 
     if (isProxyReady && isWifiDirectReady) {
       state.loadingState.value = StatusViewState.LoadingState.DONE
@@ -100,7 +98,6 @@ internal constructor(
 
   private fun CoroutineScope.bindProxyPreferences(config: LoadConfig) {
     val scope = this
-
 
     proxyPreferences.listenForHttpEnabledChanges().also { f ->
       scope.launch(context = Dispatchers.Default) {

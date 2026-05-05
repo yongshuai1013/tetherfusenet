@@ -14,9 +14,22 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status
+package com.pyamsoft.tetherfi.tile
 
-internal enum class StatusSize {
-  SMALL,
-  NORMAL,
+import androidx.activity.ComponentActivity
+import com.pyamsoft.pydroid.ui.inject.ComposableInjector
+import com.pyamsoft.tetherfi.ObjectGraph
+import javax.inject.Inject
+
+internal class ProxyTileInjector : ComposableInjector() {
+
+  @Inject @JvmField internal var viewModel: ProxyTileViewModeler? = null
+
+  override fun onInject(activity: ComponentActivity) {
+    ObjectGraph.ApplicationScope.retrieve(activity).plusTile().create().inject(this)
+  }
+
+  override fun onDispose() {
+    viewModel = null
+  }
 }

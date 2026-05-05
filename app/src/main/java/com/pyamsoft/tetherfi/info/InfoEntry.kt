@@ -16,30 +16,13 @@
 
 package com.pyamsoft.tetherfi.info
 
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
-import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
-import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import javax.inject.Inject
-
-internal class InfoInjector : ComposableInjector() {
-
-  @JvmField @Inject internal var viewModel: InfoViewModeler? = null
-
-  override fun onInject(activity: ComponentActivity) {
-    ObjectGraph.ActivityScope.retrieve(activity).plusInfo().create().inject(this)
-  }
-
-  override fun onDispose() {
-    viewModel = null
-  }
-}
 
 /** On mount hooks */
 @Composable

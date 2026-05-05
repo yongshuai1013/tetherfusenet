@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.server.lock
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.core.LintIgnoreTooGenericExceptionCaught
 import com.pyamsoft.tetherfi.core.Timber
 import kotlin.math.max
 import kotlinx.coroutines.Dispatchers
@@ -47,7 +48,7 @@ internal abstract class AbstractLocker protected constructor() : Locker {
         Timber.d { "####################################" }
         try {
           onAcquireLock()
-        } catch (e: Throwable) {
+        } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
           Timber.e(e) { "Unable to acquire wakelock (${lockType}) $lockTag" }
         }
       }
@@ -63,7 +64,7 @@ internal abstract class AbstractLocker protected constructor() : Locker {
         Timber.d { "####################################" }
         try {
           onReleaseLock()
-        } catch (e: Throwable) {
+        } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
           Timber.e(e) { "Unable to release wakelock (${lockType}) $lockTag" }
         }
       }

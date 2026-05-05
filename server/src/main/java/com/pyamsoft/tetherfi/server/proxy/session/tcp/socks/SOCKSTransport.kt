@@ -75,7 +75,6 @@ internal constructor(
         }
       }
 
-  @LintIgnoreTooGenericExceptionCaught
   override suspend fun parseRequest(
       input: ByteReadChannel,
       output: ByteWriteChannel,
@@ -83,7 +82,7 @@ internal constructor(
     try {
       val versionByte = input.readByte()
       return SOCKSVersion.fromVersion(versionByte)
-    } catch (e: Throwable) {
+    } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
       errorLog(e) { "Error reading initial input byte for SOCKS version" }
       return SOCKSVersion.Invalid
     }

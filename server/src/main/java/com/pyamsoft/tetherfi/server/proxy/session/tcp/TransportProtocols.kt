@@ -72,7 +72,6 @@ internal suspend fun enforceBandwidthLimit(
 }
 
 /* @CheckResult */
-@LintIgnoreTooGenericExceptionCaught
 internal suspend inline fun talk(
     client: TetherClient,
     input: ByteReadChannel,
@@ -114,7 +113,7 @@ internal suspend inline fun talk(
               }
             }
           }
-        } catch (e: Throwable) {
+        } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
           e.ifNotCancellation {
             // Return 0 bytes to stop the talking, BUT
             // we want to still remember all the work we've done up until this point.

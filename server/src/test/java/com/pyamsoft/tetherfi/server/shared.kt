@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.server
 
+import com.pyamsoft.pydroid.core.LintIgnoreTooGenericExceptionCaught
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
@@ -35,7 +36,7 @@ inline fun runBlockingWithDelays(
 ): Unit = runBlocking {
   try {
     withTimeout(timeout) { block() }
-  } catch (e: Throwable) {
+  } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
     e.printStackTrace()
     throw e
   }

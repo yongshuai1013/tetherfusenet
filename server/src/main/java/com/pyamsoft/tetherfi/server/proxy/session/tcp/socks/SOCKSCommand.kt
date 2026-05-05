@@ -17,18 +17,15 @@
 package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.core.LintIgnoreMagicNumber
 
 enum class SOCKSCommand(
     private val byte: Byte,
 ) {
-  @Suppress("detekt:MagicNumber")
-  CONNECT(1),
 
-  @Suppress("detekt:MagicNumber")
-  BIND(2),
-
-  @Suppress("detekt:MagicNumber")
-  UDP_ASSOCIATE(3);
+  @LintIgnoreMagicNumber CONNECT(1),
+  @LintIgnoreMagicNumber BIND(2),
+  @LintIgnoreMagicNumber UDP_ASSOCIATE(3);
 
   companion object {
     @JvmStatic

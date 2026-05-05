@@ -154,7 +154,6 @@ internal constructor(
     }
   }
 
-  @LintIgnoreTooGenericExceptionCaught
   override suspend fun proxyToInternet(
       scope: CoroutineScope,
       socketCreator: SocketCreator,
@@ -222,7 +221,7 @@ internal constructor(
             }
           },
       )
-    } catch (e: Throwable) {
+    } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
       handleProxyToInternetError(
           throwable = e,
           proxyOutput = proxyOutput,

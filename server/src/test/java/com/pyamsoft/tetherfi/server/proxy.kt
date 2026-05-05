@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.server
 
 import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
+import com.pyamsoft.pydroid.core.LintIgnoreEmptyFunctionBlock
 import com.pyamsoft.pydroid.core.LintIgnoreLongMethod
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
@@ -59,7 +60,7 @@ import kotlinx.coroutines.newFixedThreadPoolContext
 import timber.log.Timber
 
 @LintIgnoreLongMethod
-@Suppress("detekt:EmptyFunctionBlock")
+@LintIgnoreEmptyFunctionBlock
 @OptIn(DelicateCoroutinesApi::class)
 internal suspend fun setupProxy(
     scope: CoroutineScope,
@@ -72,7 +73,7 @@ internal suspend fun setupProxy(
     appEnv: AppDevEnvironment.() -> Unit = {},
     withServer: suspend CoroutineScope.(Int, CoroutineDispatcher) -> Unit,
 ) {
-  assert(proxyPort >= 0 && proxyPort <= 65000)
+  assert(proxyPort in 0..65000)
   assert(nThreads >= 1)
   assert(scope.isActive)
   assert(proxyTypes.isNotEmpty())

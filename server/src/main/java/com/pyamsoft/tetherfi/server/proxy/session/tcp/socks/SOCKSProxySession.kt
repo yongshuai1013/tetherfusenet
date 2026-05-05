@@ -82,7 +82,6 @@ internal constructor(
 
   override val proxyType = SharedProxy.Type.SOCKS
 
-  @LintIgnoreTooGenericExceptionCaught
   override suspend fun proxyToInternet(
       scope: CoroutineScope,
       socketCreator: SocketCreator,
@@ -125,7 +124,7 @@ internal constructor(
           },
           onReport = onReport,
       )
-    } catch (e: Throwable) {
+    } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
       handleProxyToInternetError(
           throwable = e,
           client = client,

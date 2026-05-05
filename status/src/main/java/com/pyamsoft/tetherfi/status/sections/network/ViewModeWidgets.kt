@@ -91,38 +91,38 @@ internal fun ViewProxy(
     ) {
       if (isNewEngine) {
         StatusItem(
-          modifier = Modifier.padding(end = MaterialTheme.keylines.content),
-          title = stringResource(R.string.hotspot_proxy_port),
-          value = httpPort,
-          valueStyle =
-            MaterialTheme.typography.titleLarge.copy(
-              fontWeight = FontWeight.W400,
-              fontFamily = FontFamily.Monospace,
-            ),
+            modifier = Modifier.padding(end = MaterialTheme.keylines.content),
+            title = stringResource(R.string.hotspot_proxy_port),
+            value = httpPort,
+            valueStyle =
+                MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.W400,
+                    fontFamily = FontFamily.Monospace,
+                ),
         )
       } else {
         if (isHttpEnabled) {
           StatusItem(
-            modifier = Modifier.padding(end = MaterialTheme.keylines.content),
-            title = stringResource(R.string.hotspot_proxy_http_port),
-            value = httpPort,
-            valueStyle =
-              MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.W400,
-                fontFamily = FontFamily.Monospace,
-              ),
+              modifier = Modifier.padding(end = MaterialTheme.keylines.content),
+              title = stringResource(R.string.hotspot_proxy_http_port),
+              value = httpPort,
+              valueStyle =
+                  MaterialTheme.typography.titleLarge.copy(
+                      fontWeight = FontWeight.W400,
+                      fontFamily = FontFamily.Monospace,
+                  ),
           )
         }
 
         if (isSocksEnabled) {
           StatusItem(
-            title = stringResource(R.string.hotspot_proxy_socks_port),
-            value = socksPort,
-            valueStyle =
-              MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.W400,
-                fontFamily = FontFamily.Monospace,
-              ),
+              title = stringResource(R.string.hotspot_proxy_socks_port),
+              value = socksPort,
+              valueStyle =
+                  MaterialTheme.typography.titleLarge.copy(
+                      fontWeight = FontWeight.W400,
+                      fontFamily = FontFamily.Monospace,
+                  ),
           )
         }
       }

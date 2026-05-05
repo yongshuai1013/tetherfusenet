@@ -118,7 +118,6 @@ internal constructor(
     return requestParser.parse(line)
   }
 
-  @LintIgnoreTooGenericExceptionCaught
   suspend fun exchangeInternet(
       scope: CoroutineScope,
       serverDispatcher: ServerDispatcher,
@@ -160,7 +159,7 @@ internal constructor(
           proxyOutput = proxyOutput,
           onReport = onReport,
       )
-    } catch (e: Throwable) {
+    } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
       e.ifNotCancellation {
         if (e is SocketTimeoutException) {
           warnLog { "Proxy:Internet socket timeout! $request $client" }

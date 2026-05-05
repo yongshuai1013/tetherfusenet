@@ -16,11 +16,13 @@
 
 package com.pyamsoft.tetherfi.core
 
-import kotlin.test.Test
+import androidx.test.filters.SmallTest
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
+import org.junit.Test
 
-class JVMSanity {
+@SmallTest
+class AndroidSanity {
 
-  @Test fun sanity() = runTest { assertEquals(2 + 2, 4) }
+  @Test fun sanity() = runTest { assertEquals(3 + 3, 6) }
 }

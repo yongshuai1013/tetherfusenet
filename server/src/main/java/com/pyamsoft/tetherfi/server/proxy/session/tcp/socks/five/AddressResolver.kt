@@ -78,7 +78,6 @@ internal object AddressResolver {
     }
 
     // Then address
-    @LintIgnoreTooGenericExceptionCaught
     val destinationAddress =
         try {
           readDestinationAddress(
@@ -86,7 +85,7 @@ internal object AddressResolver {
               sourceOrByteReadChannel = sourceOrByteReadChannel,
               addressType = addressType,
           )
-        } catch (e: Throwable) {
+        } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
           Timber.e(e) { "Unable to parse the destination address" }
           onInvalidDestinationAddress(addressType)
           return null

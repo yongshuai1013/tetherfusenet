@@ -217,7 +217,6 @@ protected constructor(
     Timber.e(throwable) { "$logTag: ${message()}" }
   }
 
-  @LintIgnoreTooGenericExceptionCaught
   override suspend fun exchange(
       scope: CoroutineScope,
       socketCreator: SocketCreator,
@@ -240,7 +239,7 @@ protected constructor(
               socketTracker = socketTracker,
               data = data,
           )
-        } catch (e: Throwable) {
+        } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
           e.ifNotCancellation {
             errorLog(e) { "Error handling client Request: ${data.proxyConnectionInfo}" }
           }

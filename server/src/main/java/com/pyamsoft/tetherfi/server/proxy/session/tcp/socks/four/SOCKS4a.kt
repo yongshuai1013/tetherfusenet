@@ -17,16 +17,18 @@
 package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.four
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.core.LintIgnoreMagicNumber
 import java.net.Inet4Address
 import java.net.InetAddress
 
 private const val ZERO_BYTE: Byte = 0
 
 @CheckResult
-@Suppress("detekt:MagicNumber")
 internal fun InetAddress.isSOCKS4A(): Boolean {
   if (this is Inet4Address) {
     val a = this.address
+
+    @LintIgnoreMagicNumber
     return a[0] == ZERO_BYTE && a[1] == ZERO_BYTE && a[2] == ZERO_BYTE && a[3] != ZERO_BYTE
   }
 

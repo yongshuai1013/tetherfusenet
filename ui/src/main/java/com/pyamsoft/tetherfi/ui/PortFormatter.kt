@@ -19,7 +19,6 @@ package com.pyamsoft.tetherfi.ui
 import androidx.annotation.CheckResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 
 /*
@@ -44,9 +43,10 @@ private const val PORT_MAX_ALLOWED = 65000
 @CheckResult
 @Composable
 fun rememberPortNumber(portNumber: Int): String {
-  val portNumberString = remember(portNumber) {
-    if (portNumber in PORT_MIN_ALLOWED..PORT_MAX_ALLOWED) "$portNumber" else ""
-  }
+  val portNumberString =
+      remember(portNumber) {
+        if (portNumber in PORT_MIN_ALLOWED..PORT_MAX_ALLOWED) "$portNumber" else ""
+      }
 
   return portNumberString.ifBlank { stringResource(R.string.invalid_port) }
 }

@@ -41,7 +41,6 @@ object UDP {
   private val VALID_PORT_RANGE = 1..<65535
 
   @CheckResult
-  @LintIgnoreTooGenericExceptionCaught
   private fun readAddress(
       channelId: String,
       buf: ByteBuf,
@@ -107,7 +106,7 @@ object UDP {
           return ""
         }
       }
-    } catch (e: Throwable) {
+    } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
       Timber.e(e) { "(${channelId}) Error when reading address from data type $type" }
       return ""
     }

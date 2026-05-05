@@ -20,6 +20,7 @@ import androidx.annotation.CheckResult
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import com.pyamsoft.pydroid.core.LintIgnoreMagicNumber
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.IPV4_ADDRESS_REGEX
 import com.pyamsoft.tetherfi.server.Server
@@ -152,6 +153,7 @@ interface BroadcastNetworkStatus : Server {
         val splitUpAddress = ip.split(".")
 
         // Needs to be 4 sections
+        @LintIgnoreMagicNumber
         if (splitUpAddress.size != 4) {
           Timber.w { "Split up IP address was wrong format: $ip $splitUpAddress" }
           return false

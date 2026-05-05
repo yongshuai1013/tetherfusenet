@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.server.netty
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.core.LintIgnoreEmptyFunctionBlock
 import com.pyamsoft.pydroid.core.LintIgnoreLongMethod
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
@@ -115,7 +116,6 @@ private data class TestChannelCreator(
       )
 }
 
-@Suppress("detekt:EmptyFunctionBlock")
 internal object TestSetup {
 
   @CheckResult
@@ -156,8 +156,9 @@ internal object TestSetup {
             return flowOf(emptyList())
           }
 
-          override fun seen(client: TetherClient) {}
+          @LintIgnoreEmptyFunctionBlock override fun seen(client: TetherClient) {}
 
+          @LintIgnoreEmptyFunctionBlock
           override fun reportTransfer(client: TetherClient, report: ByteTransferReport) {}
         }
 
@@ -256,8 +257,9 @@ internal object TestSetup {
             return flowOf(emptyList())
           }
 
-          override fun seen(client: TetherClient) {}
+          @LintIgnoreEmptyFunctionBlock override fun seen(client: TetherClient) {}
 
+          @LintIgnoreEmptyFunctionBlock
           override fun reportTransfer(client: TetherClient, report: ByteTransferReport) {}
         }
 

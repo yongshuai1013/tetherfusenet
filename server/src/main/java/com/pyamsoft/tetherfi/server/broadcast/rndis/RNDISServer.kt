@@ -18,6 +18,8 @@ package com.pyamsoft.tetherfi.server.broadcast.rndis
 
 import android.annotation.SuppressLint
 import androidx.annotation.CheckResult
+import com.pyamsoft.tetherfi.core.LintIgnoreCyclomaticComplexMethod
+import com.pyamsoft.tetherfi.core.LintIgnoreLoopWithTooManyJumpStatements
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastServerImplementation
 import com.pyamsoft.tetherfi.server.broadcast.DelegatingBroadcastServer
@@ -36,6 +38,7 @@ import kotlinx.coroutines.withContext
 internal class RNDISServer @Inject internal constructor() : BroadcastServerImplementation<String> {
 
   @CheckResult
+  @LintIgnoreCyclomaticComplexMethod
   private suspend fun resolveRNDISNetwork(): String =
       withContext(context = Dispatchers.IO) {
         // On some devices, this method does not return interfaces?
@@ -44,6 +47,7 @@ internal class RNDISServer @Inject internal constructor() : BroadcastServerImple
         val candidates = mutableListOf<RNDISCandidate>()
         if (allIfaces != null) {
           // Collect all known interfaces here
+          @LintIgnoreLoopWithTooManyJumpStatements
           for (iface in allIfaces) {
             val name = iface.name.orEmpty().lowercase()
             if (name.isBlank()) {

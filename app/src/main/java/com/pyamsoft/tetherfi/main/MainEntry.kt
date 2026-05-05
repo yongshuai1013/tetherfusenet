@@ -17,7 +17,6 @@
 package com.pyamsoft.tetherfi.main
 
 import android.provider.Settings
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -34,17 +33,11 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
-import com.pyamsoft.pydroid.bus.EventBus
-import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
-import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
-import com.pyamsoft.tetherfi.ObjectGraph
-import com.pyamsoft.tetherfi.core.AppDevEnvironment
-import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.qr.QRCodeEntry
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
@@ -55,7 +48,6 @@ import com.pyamsoft.tetherfi.status.PermissionResponse
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerPortTypes
 import com.pyamsoft.tetherfi.ui.dialog.SlowSpeedsDialog
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -64,28 +56,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-internal class MainInjector @Inject internal constructor() : ComposableInjector() {
-
-  @JvmField @Inject internal var viewModel: MainViewModeler? = null
-
-  @JvmField @Inject internal var appEnvironment: AppDevEnvironment? = null
-  @JvmField @Inject internal var permissionRequestBus: EventBus<PermissionRequests>? = null
-  @JvmField @Inject internal var permissionResponseBus: EventConsumer<PermissionResponse>? = null
-  @JvmField @Inject internal var experimentalRuntimeFlags: ExperimentalRuntimeFlags? = null
-
-  override fun onInject(activity: ComponentActivity) {
-    ObjectGraph.ActivityScope.retrieve(activity).inject(this)
-  }
-
-  override fun onDispose() {
-    viewModel = null
-    appEnvironment = null
-    permissionRequestBus = null
-    permissionResponseBus = null
-    experimentalRuntimeFlags = null
-  }
-}
 
 /** Sets up permission request interaction */
 @Composable

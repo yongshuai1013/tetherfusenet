@@ -16,7 +16,6 @@
 
 package com.pyamsoft.tetherfi.connections
 
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,25 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
-import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
-import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import javax.inject.Inject
-
-internal class ConnectionInjector : ComposableInjector() {
-
-  @JvmField @Inject internal var viewModel: ConnectionViewModel? = null
-
-  override fun onInject(activity: ComponentActivity) {
-    ObjectGraph.ActivityScope.retrieve(activity).plusConnection().create().inject(this)
-  }
-
-  override fun onDispose() {
-    viewModel = null
-  }
-}
 
 /** On mount hooks */
 @Composable

@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.server.proxy.session.tcp.http
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.core.LintIgnoreMagicNumber
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.SOCKET_EOL
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.writeFully
@@ -55,12 +56,10 @@ private enum class ProxyHttpEvents(
     val code: Int,
     val message: String,
 ) {
-  @Suppress("detekt:MagicNumber")
-  CONNECT(200, "Connection Established"),
-  @Suppress("detekt:MagicNumber")
-  ERROR(502, "Bad Gateway"),
-  @Suppress("detekt:MagicNumber")
-  BLOCKED(403, "Forbidden"),
+
+  @LintIgnoreMagicNumber CONNECT(200, "Connection Established"),
+  @LintIgnoreMagicNumber ERROR(502, "Bad Gateway"),
+  @LintIgnoreMagicNumber BLOCKED(403, "Forbidden"),
 }
 
 /** Write a message to the proxy for various events */

@@ -20,6 +20,7 @@ import android.content.Context
 import android.location.LocationManager
 import androidx.core.content.getSystemService
 import androidx.core.location.LocationManagerCompat
+import com.pyamsoft.pydroid.core.LintIgnoreTooGenericExceptionCaught
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
@@ -51,7 +52,7 @@ internal constructor(
 
         try {
           return@withContext LocationManagerCompat.isLocationEnabled(manager)
-        } catch (e: Throwable) {
+        } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
           e.ifNotCancellation {
             // Something went wrong, we are on a low API device (<20?) and do not
             // have location permission? What?

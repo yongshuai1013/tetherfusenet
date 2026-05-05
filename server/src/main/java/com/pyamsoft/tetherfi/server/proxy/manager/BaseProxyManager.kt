@@ -24,6 +24,7 @@ import com.pyamsoft.pydroid.core.LintIgnoreTooGenericExceptionCaught
 import com.pyamsoft.pydroid.core.LintIgnoreTooManyFunctions
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.tetherfi.core.LintIgnoreThrowsCount
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
@@ -240,7 +241,7 @@ protected constructor(
   }
 
   @CheckResult
-  @Suppress("detekt:ThrowsCount")
+  @LintIgnoreThrowsCount
   protected fun getServerAddress(
       hostName: String,
       port: Int,
@@ -278,8 +279,6 @@ protected constructor(
   }
 
   /** This function must ALWAYS call usingSocketBuilder {} or else a socket may potentially leak */
-  // TODO move when supported on Expression
-  @LintIgnoreTooGenericExceptionCaught
   override suspend fun loop(
       lock: Locker.Lock,
       onOpened: suspend () -> Unit,
@@ -315,7 +314,7 @@ protected constructor(
                           server = server,
                           tracker = tracker,
                       )
-                    } catch (e: Throwable) {
+                    } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
                       e.ifNotCancellation {
                         Timber.e(e) { "Error running server" }
                         onError(e)
@@ -327,7 +326,7 @@ protected constructor(
                 }
               },
           )
-        } catch (e: Throwable) {
+        } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
           e.ifNotCancellation {
             Timber.e(e) { "Error occurred while opening server" }
             onError(e)
@@ -349,6 +348,5 @@ protected constructor(
 
     private const val PORT_MIN_ALLOWED = 1025
     private const val PORT_MAX_ALLOWED = 65000
-
   }
 }

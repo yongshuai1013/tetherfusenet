@@ -21,6 +21,7 @@ import com.pyamsoft.pydroid.core.LintIgnoreLongMethod
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.core.requireNotNull
+import com.pyamsoft.tetherfi.core.LintIgnoreCyclomaticComplexMethod
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.SocketCreator
@@ -169,7 +170,7 @@ internal data class UDPRelayServer(
   @CheckResult
   @LintIgnoreLongMethod
   @OptIn(InternalIoApi::class)
-  @Suppress("detekt:CyclomaticComplexMethod")
+  @LintIgnoreCyclomaticComplexMethod
   inline fun relay(
       scope: CoroutineScope,
       crossinline onError: suspend (Throwable) -> Unit,

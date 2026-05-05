@@ -20,6 +20,8 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.core.LintIgnoreSwallowedException
+import com.pyamsoft.pydroid.core.LintIgnoreTooGenericExceptionCaught
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.core.Timber
@@ -39,7 +41,7 @@ internal class ProxyForegroundService internal constructor() : Service() {
   private fun safeParse(raw: String): NotificationLauncher.Actions? {
     try {
       return NotificationLauncher.Actions.valueOf(raw)
-    } catch (e: Throwable) {
+    } catch (@LintIgnoreSwallowedException @LintIgnoreTooGenericExceptionCaught e: Throwable) {
       Timber.e(e) { "Error parsing NotificationLauncher.Action param: $raw" }
       return null
     }

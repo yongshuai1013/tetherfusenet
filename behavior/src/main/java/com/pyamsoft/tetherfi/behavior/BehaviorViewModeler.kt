@@ -60,15 +60,14 @@ internal constructor(
   )
 
   private fun markPreferencesLoaded(config: LoadConfig) {
-    if (
-        config.tweakIgnoreVpn &&
-            config.tweakIgnoreLocation &&
-            config.tweakShutdownWithNoClients &&
-            config.tweakKeepScreenOn &&
-            config.tweakWakeLock &&
-            config.expertPowerBalance &&
-            config.expertSocketTimeout
-    ) {
+    val isExpertReady = config.expertPowerBalance && config.expertSocketTimeout
+
+    val isRunningTweaksReady =
+        config.tweakShutdownWithNoClients && config.tweakKeepScreenOn && config.tweakWakeLock
+
+    val isIgnoreTweaksReady = config.tweakIgnoreVpn && config.tweakIgnoreLocation
+
+    if (isRunningTweaksReady && isIgnoreTweaksReady && isExpertReady) {
       state.loadingState.value = BehaviorViewState.LoadingState.DONE
     }
   }
@@ -331,8 +330,6 @@ internal constructor(
     val newVal = state.socketTimeout.updateAndGet { timeout }
     expertPreferences.setSocketTimeout(newVal)
   }
-
-  fun handleToggleNewEngine() {}
 
   companion object {
 

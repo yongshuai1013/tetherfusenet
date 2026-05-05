@@ -16,8 +16,15 @@
 
 package com.pyamsoft.tetherfi.core
 
-/**
- * An annotation for the linter to say that this line is allowed to be "long"
- */
+/** An annotation for the linter to say that this line is allowed to be "complex" */
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.SOURCE)
+annotation class LintIgnoreCyclomaticComplexMethod
+
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.SOURCE)
+annotation class LintIgnoreThrowsCount
+
 @Target(AnnotationTarget.EXPRESSION)
-@Retention(AnnotationRetention.SOURCE) annotation class LintIgnoreMaxLineLength
+@Retention(AnnotationRetention.SOURCE)
+annotation class LintIgnoreLoopWithTooManyJumpStatements

@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.server.http
 
 import com.pyamsoft.pydroid.core.LintIgnoreLongMethod
+import com.pyamsoft.pydroid.core.LintIgnoreTooGenericExceptionCaught
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.HOSTNAME
 import com.pyamsoft.tetherfi.server.RESPONSE_TEXT
@@ -131,7 +132,7 @@ class HTTPProxyPerformanceTest {
                                     pool.recycle(dst)
                                   }
                                 }
-                          } catch (e: Throwable) {
+                          } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
                             e.ifNotCancellation {
                               println("Error connecting proxy: $proxyRemote")
                               e.printStackTrace()
