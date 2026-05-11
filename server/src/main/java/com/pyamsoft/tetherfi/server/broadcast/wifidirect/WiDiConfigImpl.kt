@@ -50,7 +50,6 @@ internal constructor(
   @RequiresApi(Build.VERSION_CODES.Q)
   private fun getPreferredBandQ(band: ServerNetworkBand): Int =
       when (band) {
-        ServerNetworkBand.MODERN -> WifiP2pConfig.GROUP_OWNER_BAND_5GHZ
         ServerNetworkBand.LEGACY -> WifiP2pConfig.GROUP_OWNER_BAND_2GHZ
         // API Q does not have support for other bands, just use the newest we can
         else -> WifiP2pConfig.GROUP_OWNER_BAND_5GHZ
@@ -75,6 +74,18 @@ internal constructor(
 
     return getPreferredBandQ(band)
   }
+
+  override suspend fun matchesGroup(ssid: String, password: String): Boolean =
+      withContext(context = Dispatchers.Default) {
+        // If we can't use a custom config, then it always matches based on the system!
+        if (!ServerDefaults.canUseCustomConfig()) {
+          return@withContext true
+        }
+
+        val expectedSsid = ServerDefaults.asWifiSsid(getPreferredSsid())
+        val expectedPassword = getPreferredPassword()
+        return@withContext ssid == expectedSsid && password == expectedPassword
+      }
 
   override suspend fun getConfiguration(): WifiP2pConfig? =
       withContext(context = Dispatchers.Default) {

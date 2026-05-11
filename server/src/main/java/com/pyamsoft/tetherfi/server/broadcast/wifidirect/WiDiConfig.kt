@@ -22,4 +22,6 @@ import androidx.annotation.CheckResult
 internal interface WiDiConfig {
 
   @CheckResult suspend fun getConfiguration(): WifiP2pConfig?
+
+  @CheckResult suspend fun matchesGroup(ssid: String, password: String): Boolean
 }
