@@ -55,6 +55,8 @@ import io.netty.handler.logging.LoggingHandler
 import io.netty.util.ReferenceCountUtil
 import java.net.InetSocketAddress
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 // Cannot be shareable because of the local state messageQueue and outboundChannel
 internal class Http1ProxyHandler
@@ -62,7 +64,7 @@ private constructor(
     isDebug: Boolean,
     scope: CoroutineScope,
     serverSocketTimeout: ServerSocketTimeout,
-    allowedClients: AllowedClients,
+    private val allowedClients: AllowedClients,
     private val blockedClients: BlockedClients,
     private val tcpSocketCreator: ChannelCreator,
 ) :
@@ -103,10 +105,17 @@ private constructor(
 
   private fun queueOrDeliverOutboundMessage(msg: Any) {
     val outbound = outboundChannel
+
+    // Retain the message until used
+    val retained = ReferenceCountUtil.retain(msg)
     if (outbound == null) {
-      messageQueue.add(msg)
+      // Queue for later
+      messageQueue.add(retained)
     } else {
-      outbound.writeAndFlush(msg)
+      // Use immediately and release
+      outbound.writeAndFlush(retained).addListener {
+        ReferenceCountUtil.release(retained)
+      }
     }
   }
 
@@ -117,7 +126,9 @@ private constructor(
       needsFlush = queued.isNotEmpty()
       if (needsFlush) {
         for (q in queued) {
-          channel.write(q)
+          channel.write(q).addListener {
+            ReferenceCountUtil.release(q)
+          }
         }
       }
     } finally {
@@ -189,6 +200,8 @@ private constructor(
       sendErrorAndClose(ctx, msg)
       return
     }
+
+    scope.launch(context = Dispatchers.IO) { allowedClients.seen(client) }
 
     val future =
         tcpSocketCreator.connect(
@@ -309,6 +322,15 @@ private constructor(
       return
     }
 
+    // If the client is blocked we do not process any input
+    if (blockedClients.isBlocked(client)) {
+      Timber.w { "($channelId) DROP: $tag client was blocked: $client" }
+      sendErrorAndClose(ctx, msg)
+      return
+    }
+
+    scope.launch(context = Dispatchers.IO) { allowedClients.seen(client) }
+
     val future =
         tcpSocketCreator.connect(
             hostName = parsed.resolvedHostName,
@@ -397,20 +419,26 @@ private constructor(
 
       // Replay the initial request
       Timber.d { "($channelId) Forward connect to $parsed" }
-      outbound.writeAndFlush(msg)
 
-      // Hold onto this channel for future requests to immediately fire off to it
-      assignOutboundChannel(outbound)
+      val retained = ReferenceCountUtil.retain(msg)
+      outbound.writeAndFlush(retained).addListener {
+        // Release held memory
+        ReferenceCountUtil.release(retained)
 
-      // And then replay any previously seen messages that arrived BEFORE we were set up
-      // any future messages will go directly to the outbound now that the channel is held
-      replayQueuedMessages(outbound)
+        // Hold onto this channel for future requests to immediately fire off to it
+        assignOutboundChannel(outbound)
 
-      // All messages have been replayed, drop the client codec
-      outbound.pipeline().dropHandler(HttpClientCodec::class)
+        // And then replay any previously seen messages that arrived BEFORE we were set up
+        // any future messages will go directly to the outbound now that the channel is held
+        replayQueuedMessages(outbound)
 
-      // Remove the http server codec
-      pipeline.dropHandler(HttpServerCodec::class)
+        // All messages have been replayed, drop the client codec
+        outbound.pipeline().dropHandler(HttpClientCodec::class)
+
+        // Remove the http server codec
+        pipeline.dropHandler(HttpServerCodec::class)
+      }
+
     }
   }
 
@@ -426,6 +454,9 @@ private constructor(
 
   override fun onCloseChannels(ctx: ChannelHandlerContext) {
     Timber.d { "Clear pending message queue" }
+    for (q in messageQueue) {
+      ReferenceCountUtil.release(q)
+    }
     messageQueue.clear()
 
     outboundChannel?.flushAndClose()
