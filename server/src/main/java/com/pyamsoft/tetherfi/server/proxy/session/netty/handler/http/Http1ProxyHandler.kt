@@ -43,6 +43,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.DefaultFullHttpResponse
 import io.netty.handler.codec.http.HttpClientCodec
 import io.netty.handler.codec.http.HttpContent
+import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpRequest
 import io.netty.handler.codec.http.HttpResponse
@@ -257,10 +258,13 @@ private constructor(
 
       // Then establish connection
       Timber.d { "(${channelId}) Write $tag to $parsed" }
-      ctx.writeAndFlush(response)
 
-      // Remove the http server codec
-      pipeline.dropHandler(HttpServerCodec::class)
+
+      // Tell proxy we've established connection
+      ctx.writeAndFlush(response).addListener {
+        // Remove the http server codec only after 200 OK is fully written
+        pipeline.dropHandler(HttpServerCodec::class)
+      }
     }
   }
 
@@ -350,6 +354,23 @@ private constructor(
 
       // Adjust the URL to be relative to the new host
       msg.uri = parsed.proxyCorrectedFilePath
+
+      // Strip hop-by-hop headers before forwarding
+      val headers = msg.headers()
+
+      @Suppress("DEPRECATION")
+      headers.remove(HttpHeaderNames.KEEP_ALIVE)
+      headers.remove(HttpHeaderNames.CONNECTION)
+
+      headers.remove(HttpHeaderNames.TRANSFER_ENCODING)
+      headers.remove(HttpHeaderNames.UPGRADE)
+      headers.remove(HttpHeaderNames.TE)
+      headers.remove(HttpHeaderNames.TRAILER)
+
+      @Suppress("DEPRECATION")
+      headers.remove(HttpHeaderNames.PROXY_CONNECTION)
+      headers.remove(HttpHeaderNames.PROXY_AUTHENTICATE)
+      headers.remove(HttpHeaderNames.PROXY_AUTHORIZATION)
 
       // Enable auto-read once connection is established
       serverChannel.config().isAutoRead = true
