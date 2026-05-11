@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.server.proxy.session.netty.handler
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
@@ -29,6 +30,8 @@ import io.netty.buffer.ByteBuf
 import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
 import io.netty.util.AttributeKey
+import io.netty.util.ReferenceCountUtil
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,7 +55,7 @@ private constructor(
     ) {
 
   // Your single socket read payload isn't THAT LARGE right???
-  @Volatile private var bytesMoved: Int = 0
+  private val bytesMoved = AtomicInteger(0)
 
   private var byteCountJob: Job? = null
 
@@ -84,10 +87,8 @@ private constructor(
   }
 
   private fun produceByteReport(client: TetherClient, direction: Direction) {
-    val count = bytesMoved
-
     // Reset back to zero or we keep double counting
-    bytesMoved = 0
+    val count = bytesMoved.getAndSet(0)
 
     var internetToProxy = 0
     var proxyToInternet = 0
@@ -184,12 +185,11 @@ private constructor(
       return
     }
 
-    if (msg is ByteBuf) {
-      // Grab the amount BEFORE the data buffer is released
-      val amountMoved = msg.readableBytes()
-
-      // Keep count
-      bytesMoved += amountMoved
+    val bytes = msg.cast<ByteBuf>()
+    if (bytes == null) {
+      Timber.w { "($channelId): channelRead msg was not ByteBuf" }
+      sendErrorAndClose(ctx, msg)
+      return
     }
 
     val client = getTetherClient(ctx)
@@ -208,7 +208,16 @@ private constructor(
 
     scope.launch(context = Dispatchers.IO) { allowedClients.seen(client) }
 
-    writeToChannel.writeAndFlush(msg)
+      // Grab the amount BEFORE the data buffer is released
+      val retained = ReferenceCountUtil.retain(bytes)
+      val amountMoved = retained.readableBytes()
+
+      // Keep count
+      bytesMoved.addAndGet(amountMoved)
+
+    writeToChannel.writeAndFlush(retained).addListener {
+      ReferenceCountUtil.release(retained)
+    }
   }
 
   override fun channelWritabilityChanged(ctx: ChannelHandlerContext) {
