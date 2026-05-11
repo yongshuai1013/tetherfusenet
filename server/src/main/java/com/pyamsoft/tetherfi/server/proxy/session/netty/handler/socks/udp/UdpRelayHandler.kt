@@ -38,9 +38,6 @@ import io.ktor.util.network.port
 import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.socket.DatagramPacket
-import io.netty.handler.codec.socksx.v5.DefaultSocks5CommandResponse
-import io.netty.handler.codec.socksx.v5.Socks5AddressType
-import io.netty.handler.codec.socksx.v5.Socks5CommandStatus
 import io.netty.util.AttributeKey
 import io.netty.util.ReferenceCountUtil
 import java.net.InetSocketAddress
@@ -108,9 +105,10 @@ private constructor(
         msg = msg,
         onError = { sendErrorAndClose(ctx, msg) },
         onUnwrapped = {
-          // The data buffer is internally retained()
-          // We MUST release it when this function is done
-          retainedData, destination ->
+            // The data buffer is internally retained()
+            // We MUST release it when this function is done
+            retainedData,
+            destination ->
           val tag = "UDP-RELAY-${destination.address}:${destination.port}"
 
           // Replace the channel ID here now that we have evaluated the real upstream
@@ -140,9 +138,7 @@ private constructor(
           }
 
           val packet = DatagramPacket(retainedData, destination)
-          ctx.writeAndFlush(packet).addListener {
-            ReferenceCountUtil.release(retainedData)
-          }
+          ctx.writeAndFlush(packet).addListener { ReferenceCountUtil.release(retainedData) }
         },
     )
   }

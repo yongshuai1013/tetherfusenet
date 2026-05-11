@@ -208,16 +208,14 @@ private constructor(
 
     scope.launch(context = Dispatchers.IO) { allowedClients.seen(client) }
 
-      // Grab the amount BEFORE the data buffer is released
-      val retained = ReferenceCountUtil.retain(bytes)
-      val amountMoved = retained.readableBytes()
+    // Grab the amount BEFORE the data buffer is released
+    val retained = ReferenceCountUtil.retain(bytes)
+    val amountMoved = retained.readableBytes()
 
-      // Keep count
-      bytesMoved.addAndGet(amountMoved)
+    // Keep count
+    bytesMoved.addAndGet(amountMoved)
 
-    writeToChannel.writeAndFlush(retained).addListener {
-      ReferenceCountUtil.release(retained)
-    }
+    writeToChannel.writeAndFlush(retained).addListener { ReferenceCountUtil.release(retained) }
   }
 
   override fun channelWritabilityChanged(ctx: ChannelHandlerContext) {

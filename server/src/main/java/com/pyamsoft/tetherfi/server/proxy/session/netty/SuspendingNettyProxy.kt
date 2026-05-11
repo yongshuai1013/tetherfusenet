@@ -17,7 +17,6 @@
 package com.pyamsoft.tetherfi.server.proxy.session.netty
 
 import androidx.annotation.CheckResult
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow

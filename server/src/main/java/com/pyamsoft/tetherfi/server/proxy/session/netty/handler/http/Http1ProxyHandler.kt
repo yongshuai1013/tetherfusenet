@@ -113,9 +113,7 @@ private constructor(
       messageQueue.add(retained)
     } else {
       // Use immediately and release
-      outbound.writeAndFlush(retained).addListener {
-        ReferenceCountUtil.release(retained)
-      }
+      outbound.writeAndFlush(retained).addListener { ReferenceCountUtil.release(retained) }
     }
   }
 
@@ -126,9 +124,7 @@ private constructor(
       needsFlush = queued.isNotEmpty()
       if (needsFlush) {
         for (q in queued) {
-          channel.write(q).addListener {
-            ReferenceCountUtil.release(q)
-          }
+          channel.write(q).addListener { ReferenceCountUtil.release(q) }
         }
       }
     } finally {
@@ -272,7 +268,6 @@ private constructor(
       // Then establish connection
       Timber.d { "(${channelId}) Write $tag to $parsed" }
 
-
       // Tell proxy we've established connection
       ctx.writeAndFlush(response).addListener {
         // Remove the http server codec only after 200 OK is fully written
@@ -380,8 +375,7 @@ private constructor(
       // Strip hop-by-hop headers before forwarding
       val headers = msg.headers()
 
-      @Suppress("DEPRECATION")
-      headers.remove(HttpHeaderNames.KEEP_ALIVE)
+      @Suppress("DEPRECATION") headers.remove(HttpHeaderNames.KEEP_ALIVE)
       headers.remove(HttpHeaderNames.CONNECTION)
 
       headers.remove(HttpHeaderNames.TRANSFER_ENCODING)
@@ -389,8 +383,7 @@ private constructor(
       headers.remove(HttpHeaderNames.TE)
       headers.remove(HttpHeaderNames.TRAILER)
 
-      @Suppress("DEPRECATION")
-      headers.remove(HttpHeaderNames.PROXY_CONNECTION)
+      @Suppress("DEPRECATION") headers.remove(HttpHeaderNames.PROXY_CONNECTION)
       headers.remove(HttpHeaderNames.PROXY_AUTHENTICATE)
       headers.remove(HttpHeaderNames.PROXY_AUTHORIZATION)
 
@@ -438,7 +431,6 @@ private constructor(
         // Remove the http server codec
         pipeline.dropHandler(HttpServerCodec::class)
       }
-
     }
   }
 
