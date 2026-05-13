@@ -47,6 +47,7 @@
   <string name="block_permission_grant">授權</string>
   <string name="block_permission_type_location">精確地理位置</string>
   <string name="block_permission_type_nearby">鄰近 Wi-Fi 網路</string>
+  <string name="block_permission_type_local_network">本地網路</string>
 
   <string name="block_background_data_open_settings">啟用定位服務</string>
 </resources>
