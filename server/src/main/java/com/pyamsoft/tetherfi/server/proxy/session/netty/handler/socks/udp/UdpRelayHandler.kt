@@ -35,7 +35,6 @@ import com.pyamsoft.tetherfi.server.proxy.session.netty.handler.flushAndClose
 import com.pyamsoft.tetherfi.server.proxy.session.netty.handler.zeroOrAmountAsLong
 import io.ktor.util.network.address
 import io.ktor.util.network.port
-import io.netty.buffer.ByteBuf
 import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.socket.DatagramPacket
@@ -104,7 +103,7 @@ private constructor(
         channelId = channelId,
         ctx = ctx,
         msg = msg,
-        onError = { sendErrorAndClose(ctx, it)},
+        onError = { sendErrorAndClose(ctx, it) },
         onUnwrapped = { retainedData, destination ->
           val tag = "UDP-RELAY-${destination.address}:${destination.port}"
 

@@ -52,9 +52,9 @@ object UDP {
 
   @CheckResult
   private fun readAddress(
-    channelId: String,
-    buf: ByteBuf,
-    type: Socks5AddressType,
+      channelId: String,
+      buf: ByteBuf,
+      type: Socks5AddressType,
   ): String {
     try {
       when (type) {
@@ -124,11 +124,11 @@ object UDP {
 
   @LintIgnoreLongMethod
   fun unwrap(
-    channelId: String,
-    ctx: ChannelHandlerContext,
-    msg: DatagramPacket,
-    onUnwrapped: (ByteBuf, InetSocketAddress) -> Unit,
-    onError: (ReferenceCounted) -> Unit,
+      channelId: String,
+      ctx: ChannelHandlerContext,
+      msg: DatagramPacket,
+      onUnwrapped: (ByteBuf, InetSocketAddress) -> Unit,
+      onError: (ReferenceCounted) -> Unit,
   ) {
     val buf = msg.content()
     // Drop bad connection
@@ -191,7 +191,7 @@ object UDP {
       try {
         onUnwrapped(retainedData, address)
       } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
-        Timber.e(e) {"Failed to unwrap UDP data"}
+        Timber.e(e) { "Failed to unwrap UDP data" }
         onError(retainedData)
       }
     }
@@ -230,9 +230,9 @@ object UDP {
 
   @CheckResult
   fun wrap(
-    alloc: ByteBufAllocator,
-    sender: InetSocketAddress,
-    content: ByteBuf,
+      alloc: ByteBufAllocator,
+      sender: InetSocketAddress,
+      content: ByteBuf,
   ): ByteBuf {
     return alloc.ioBuffer(LEADING_HEADER_YOLO_AMOUNT + content.readableBytes()).apply {
       // 2 reserved
