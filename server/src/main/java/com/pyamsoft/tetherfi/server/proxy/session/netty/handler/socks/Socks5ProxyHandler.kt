@@ -292,6 +292,10 @@ internal constructor(
       return
     }
 
+    // Release the original message
+    ReferenceCountUtil.release(msg)
+
+    // Write the new response
     ctx.writeAndFlush(
         DefaultSocks5CommandResponse(
             Socks5CommandStatus.SUCCESS,

@@ -109,6 +109,10 @@ internal constructor(
       return
     }
 
+    // Release the original message
+    ReferenceCountUtil.release(msg)
+
+    // Write the new response
     ctx.writeAndFlush(
         DefaultSocks4CommandResponse(
             Socks4CommandStatus.SUCCESS,
