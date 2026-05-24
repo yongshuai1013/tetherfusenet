@@ -112,6 +112,13 @@ internal constructor(
       return
     }
 
+    // Don't allow sending messages to local destinations
+    if (isBlockedLocalAddress(dstAddr)) {
+      Timber.w { "($channelId) DROP: $tag Blocked local address: $dstAddr" }
+      sendFailureAndClose(ctx, msg)
+      return
+    }
+
     val serverChannel = ctx.channel()
     val remoteClient = serverChannel.remoteAddress().cast<InetSocketAddress>()
     if (remoteClient == null) {

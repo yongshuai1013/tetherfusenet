@@ -175,6 +175,13 @@ private constructor(
       return
     }
 
+    // Don't allow sending messages to local destinations
+    if (isBlockedLocalAddress(parsed.resolvedHostName)) {
+      Timber.w { "($channelId) DROP: $tag Blocked local address: ${parsed.resolvedHostName}" }
+      sendErrorAndClose(ctx, msg)
+      return
+    }
+
     val serverChannel = ctx.channel()
     val remoteClient = serverChannel.remoteAddress().cast<InetSocketAddress>()
     if (remoteClient == null) {
@@ -298,6 +305,13 @@ private constructor(
 
     if (parsed.resolvedPort !in VALID_PORT_RANGE) {
       Timber.w { "(${channelId}) DROP: $tag Invalid upstream destination port: $parsed" }
+      sendErrorAndClose(ctx, msg)
+      return
+    }
+
+    // Don't allow sending messages to local destinations
+    if (isBlockedLocalAddress(parsed.resolvedHostName)) {
+      Timber.w { "($channelId) DROP: $tag Blocked local address: ${parsed.resolvedHostName}" }
       sendErrorAndClose(ctx, msg)
       return
     }
