@@ -96,15 +96,15 @@ object UDP {
         Socks5AddressType.DOMAIN -> {
           val addressLength = buf.readUnsignedByte().toInt()
           if (addressLength == 0) {
-            // SOCKS spec says we must fall back to 0 address
-            return "0.0.0.0"
+            Timber.w { "(${channelId}) DROP: zero-length DOMAIN address" }
+            return ""
           }
 
           val sequence = buf.readCharSequence(addressLength, Charsets.US_ASCII).toString()
           if (addressLength == 1 && sequence == "0") {
-            // PySocks delivers a random port with an address of "0"
-            // SOCKS spec says we must fall back to 0 address
-            return "0.0.0.0"
+            // PySocks quirk: sends address "0" for unresolved destinations
+            Timber.w { "(${channelId}) DROP: PySocks zero DOMAIN address" }
+            return ""
           }
 
           return sequence
