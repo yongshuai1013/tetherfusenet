@@ -30,6 +30,7 @@ import io.netty.buffer.ByteBuf
 import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
 import io.netty.util.AttributeKey
+import io.netty.util.ReferenceCountUtil
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
@@ -57,21 +58,6 @@ private constructor(
   private val bytesMoved = AtomicInteger(0)
 
   private var byteCountJob: Job? = null
-
-  @CheckResult
-  private fun getWritebackChannel(ctx: ChannelHandlerContext): Channel? {
-    return ctx.channel().attr(WRITE_BACK_CHANNEL).get()
-  }
-
-  @CheckResult
-  private fun getDirection(ctx: ChannelHandlerContext): Direction? {
-    return ctx.channel().attr(DIRECTION).get()
-  }
-
-  @CheckResult
-  private fun getChannelTag(ctx: ChannelHandlerContext): String? {
-    return ctx.channel().attr(TAG).get()
-  }
 
   private fun ensureChannelTag(ctx: ChannelHandlerContext) {
     applyChannelId {
@@ -161,6 +147,9 @@ private constructor(
 
   override fun sendErrorAndClose(ctx: ChannelHandlerContext, msg: Any) {
     closeChannels(ctx)
+
+    // Release the original message
+    ReferenceCountUtil.release(msg)
   }
 
   override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
@@ -251,6 +240,21 @@ private constructor(
     @JvmStatic
     private val DIRECTION: AttributeKey<Direction> =
         AttributeKey.newInstance("${RelayHandler::class.simpleName}-DIRECTION")
+
+    @CheckResult
+    private fun getWritebackChannel(ctx: ChannelHandlerContext): Channel? {
+      return ctx.channel().attr(WRITE_BACK_CHANNEL).get()
+    }
+
+    @CheckResult
+    private fun getDirection(ctx: ChannelHandlerContext): Direction? {
+      return ctx.channel().attr(DIRECTION).get()
+    }
+
+    @CheckResult
+    private fun getChannelTag(ctx: ChannelHandlerContext): String? {
+      return ctx.channel().attr(TAG).get()
+    }
 
     @JvmStatic
     @CheckResult
