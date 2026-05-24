@@ -273,6 +273,16 @@ private constructor(
 
         unwrapUdpResponse(ctx, channelId, msg, sender)
       } else {
+        // This is from the remote server
+        // but this packet should NEVER be from our TCP control socket
+        // so if it is, drop it
+        if (sender.address == tcpControlClient.address) {
+          Timber.w {
+            "(${channelId}) DROP: Spoof packet received? Claim from ${sender.address} in internet-response path"
+          }
+          return
+        }
+
         val client = resolveTetherClient(ctx, backToClient)
 
         // If the client is blocked we do not process any input
