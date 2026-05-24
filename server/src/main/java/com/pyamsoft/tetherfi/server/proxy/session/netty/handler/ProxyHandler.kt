@@ -141,7 +141,7 @@ internal constructor(
 
     private const val CONNECTION_RESET_MESSAGE = "Connection reset by peer"
 
-    private val IPV4_LOCALHOST_BYTE_IDENTIFIER = 127.toByte()
+    private const val IPV4_LOCALHOST_BYTE_IDENTIFIER = 127.toByte()
     private val IPV6_LOCALHOST_BYTE_ARRAY = byteArrayOf(
       0, 0, 0, 0,
       0, 0, 0, 0,
