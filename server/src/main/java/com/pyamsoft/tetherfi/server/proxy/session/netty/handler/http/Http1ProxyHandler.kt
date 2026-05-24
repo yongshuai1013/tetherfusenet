@@ -175,6 +175,21 @@ private constructor(
       return
     }
 
+    // Make sure that the HOST header matches the destination requested
+    // if the host header is provided (most of the time it is)
+    val hostHeader = msg.headers().get(HttpHeaderNames.HOST)
+    if (!hostHeader.isNullOrBlank()) {
+      val targetAuthority = "${parsed.resolvedHostName}:${parsed.resolvedPort}"
+      val hostMatches =
+          hostHeader.equals(targetAuthority, ignoreCase = true) ||
+              hostHeader.equals(parsed.resolvedHostName, ignoreCase = true)
+      if (!hostMatches) {
+        Timber.w { "($channelId) DROP: $tag Host '$hostHeader' != CONNECT target '$targetAuthority'" }
+        sendErrorAndClose(ctx, msg)
+        return
+      }
+    }
+
     // Don't allow sending messages to local destinations
     if (isBlockedLocalAddress(parsed.resolvedHostName)) {
       Timber.w { "($channelId) DROP: $tag Blocked local address: ${parsed.resolvedHostName}" }
