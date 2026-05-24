@@ -33,6 +33,7 @@ import io.netty.channel.socket.DatagramPacket
 import io.netty.handler.codec.socksx.v5.Socks5AddressType
 import io.netty.resolver.DefaultAddressResolverGroup
 import io.netty.util.ReferenceCountUtil
+import io.netty.util.ReferenceCounted
 import java.net.Inet4Address
 import java.net.Inet6Address
 import java.net.InetSocketAddress
@@ -51,9 +52,9 @@ object UDP {
 
   @CheckResult
   private fun readAddress(
-      channelId: String,
-      buf: ByteBuf,
-      type: Socks5AddressType,
+    channelId: String,
+    buf: ByteBuf,
+    type: Socks5AddressType,
   ): String {
     try {
       when (type) {
@@ -123,38 +124,38 @@ object UDP {
 
   @LintIgnoreLongMethod
   fun unwrap(
-      channelId: String,
-      ctx: ChannelHandlerContext,
-      msg: DatagramPacket,
-      onUnwrapped: (ByteBuf, InetSocketAddress) -> Unit,
-      onError: () -> Unit,
+    channelId: String,
+    ctx: ChannelHandlerContext,
+    msg: DatagramPacket,
+    onUnwrapped: (ByteBuf, InetSocketAddress) -> Unit,
+    onError: (ReferenceCounted) -> Unit,
   ) {
     val buf = msg.content()
     // Drop bad connection
     if (buf == null) {
       Timber.w { "(${channelId}) DROP: Null buffer in packet" }
-      onError()
+      onError(msg)
       return
     }
 
     val reservedByteOne = buf.readByte()
     if (reservedByteOne != RESERVED_BYTE) {
       Timber.w { "(${channelId}) DROP: Expected reserve byte one, but got data: $reservedByteOne" }
-      onError()
+      onError(msg)
       return
     }
 
     val reservedByteTwo = buf.readByte()
     if (reservedByteTwo != RESERVED_BYTE) {
       Timber.w { "(${channelId}) DROP: Expected reserve byte two, but got data: $reservedByteTwo" }
-      onError()
+      onError(msg)
       return
     }
 
     val fragment = buf.readByte()
     if (fragment != FRAGMENT_ZERO) {
       Timber.w { "(${channelId}) DROP: Fragments not supported: $fragment" }
-      onError()
+      onError(msg)
       return
     }
 
@@ -169,19 +170,31 @@ object UDP {
 
     if (destinationAddr.isBlank()) {
       Timber.w { "(${channelId}) DROP: Invalid upstream destination address: $destinationAddr" }
-      onError()
+      onError(msg)
       return
     }
 
     if (destinationPort !in VALID_PORT_RANGE) {
       Timber.w { "(${channelId}) DROP: Invalid upstream destination port: $destinationPort" }
-      onError()
+      onError(msg)
       return
     }
 
     // The rest of the packet is data
     // We must retain this slice or the underlying buffer will be cleaned up too early
     val retainedData = buf.readRetainedSlice(buf.readableBytes())
+
+    // Release the original message at this point
+    ReferenceCountUtil.release(msg)
+
+    val handleUdpUnwrapped = { address: InetSocketAddress ->
+      try {
+        onUnwrapped(retainedData, address)
+      } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
+        Timber.e(e) {"Failed to unwrap UDP data"}
+        onError(retainedData)
+      }
+    }
 
     // Build the destination, unresolved so we do not block using the system DNS
     val destination = InetSocketAddress.createUnresolved(destinationAddr, destinationPort)
@@ -194,8 +207,7 @@ object UDP {
           Timber.e(future.cause()) {
             "Failed to resolve address for UDP unwrap: ${destinationAddr}:${destinationPort}"
           }
-          ReferenceCountUtil.release(retainedData)
-          onError()
+          onError(retainedData)
           return@addListener
         }
 
@@ -204,34 +216,23 @@ object UDP {
           Timber.w {
             "Resolved future returned NULL for udp unwrap: ${destinationAddr}:${destinationPort}"
           }
-          ReferenceCountUtil.release(retainedData)
-          onError()
+          onError(retainedData)
           return@addListener
         }
 
-        try {
-          onUnwrapped(retainedData, resolved)
-        } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
-          ReferenceCountUtil.release(retainedData)
-          throw e
-        }
+        handleUdpUnwrapped(resolved)
       }
     } else {
       // Resolution is not supported, yolo continue?
-      try {
-        onUnwrapped(retainedData, destination)
-      } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
-        ReferenceCountUtil.release(retainedData)
-        throw e
-      }
+      handleUdpUnwrapped(destination)
     }
   }
 
   @CheckResult
   fun wrap(
-      alloc: ByteBufAllocator,
-      sender: InetSocketAddress,
-      content: ByteBuf,
+    alloc: ByteBufAllocator,
+    sender: InetSocketAddress,
+    content: ByteBuf,
   ): ByteBuf {
     return alloc.ioBuffer(LEADING_HEADER_YOLO_AMOUNT + content.readableBytes()).apply {
       // 2 reserved
