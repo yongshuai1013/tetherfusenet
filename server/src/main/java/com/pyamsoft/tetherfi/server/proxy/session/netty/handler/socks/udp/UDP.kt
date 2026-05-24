@@ -41,6 +41,14 @@ object UDP {
 
   private val VALID_PORT_RANGE = 1..65535
 
+  // An arbitrary amount of leading header space
+  // 2 reserve bytes
+  // 1 fragment byte
+  // 3 address type bytes
+  // 3 more address bytes
+  // 2 port bytes
+  private const val LEADING_HEADER_YOLO_AMOUNT = 11
+
   @CheckResult
   private fun readAddress(
       channelId: String,
@@ -225,8 +233,7 @@ object UDP {
       sender: InetSocketAddress,
       content: ByteBuf,
   ): ByteBuf {
-    // May be able to initialize with 3
-    return alloc.ioBuffer().apply {
+    return alloc.ioBuffer(LEADING_HEADER_YOLO_AMOUNT + content.readableBytes()).apply {
       // 2 reserved
       val res = RESERVED_BYTE_INT
       writeByte(res)
