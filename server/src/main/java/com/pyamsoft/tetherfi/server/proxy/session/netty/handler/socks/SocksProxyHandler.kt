@@ -184,40 +184,37 @@ internal constructor(
     ReferenceCountUtil.release(msg)
 
     connectSocket.addListener { future ->
-      try {
-        if (!future.isSuccess) {
-          Timber.e(future.cause()) { "$tag proxied outbound failed" }
-          sendFailureAndClose(ctx, retained)
-          return@addListener
-        }
-
-        RelayHandler.applyChannelAttributes(
-            channel = serverChannel,
-            writeBackChannel = outbound,
-            tag = "$tag-OUTBOUND-${dstAddr}:${dstPort}",
-            direction = RelayHandler.Direction.OUTBOUND,
-            client = client,
-        )
-
-        // Tell proxy we've established connection
-        publishConnectSuccess(ctx, tag, channelId, retained, outbound)
-
-        // Drop down to raw TCP
-        val pipeline = ctx.pipeline()
-
-        dropSocksHandlers(pipeline)
-
-        // Remove our own handler
-        pipeline.dropHandler(this::class)
-
-        // Bandwidth limiter
-        pipeline.applyBandwidthLimitFor(client)
-
-        // Add a relay for the internet outbound
-        pipeline.addLast(relayHandlerFactory.create(Unit))
-      } finally {
-        ReferenceCountUtil.release(retained)
+      if (!future.isSuccess) {
+        Timber.e(future.cause()) { "$tag proxied outbound failed" }
+        sendFailureAndClose(ctx, retained)
+        return@addListener
       }
+
+      RelayHandler.applyChannelAttributes(
+          channel = serverChannel,
+          writeBackChannel = outbound,
+          tag = "$tag-OUTBOUND-${dstAddr}:${dstPort}",
+          direction = RelayHandler.Direction.OUTBOUND,
+          client = client,
+      )
+
+      // Tell proxy we've established connection
+      // This will consume the retained message
+      publishConnectSuccess(ctx, tag, channelId, retained, outbound)
+
+      // Drop down to raw TCP
+      val pipeline = ctx.pipeline()
+
+      dropSocksHandlers(pipeline)
+
+      // Remove our own handler
+      pipeline.dropHandler(this::class)
+
+      // Bandwidth limiter
+      pipeline.applyBandwidthLimitFor(client)
+
+      // Add a relay for the internet outbound
+      pipeline.addLast(relayHandlerFactory.create(Unit))
     }
   }
 

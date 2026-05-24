@@ -37,6 +37,7 @@ import io.netty.handler.codec.socksx.v4.Socks4CommandStatus
 import io.netty.handler.codec.socksx.v4.Socks4CommandType
 import io.netty.handler.codec.socksx.v4.Socks4Message
 import io.netty.handler.codec.socksx.v4.Socks4ServerDecoder
+import io.netty.util.ReferenceCountUtil
 import kotlinx.coroutines.CoroutineScope
 
 internal class Socks4ProxyHandler
@@ -118,10 +119,15 @@ internal constructor(
   }
 
   override fun sendFailureAndClose(ctx: ChannelHandlerContext, msg: Socks4CommandRequest) {
-    sendErrorAndClose(ctx, msg)
+    // Publish a SOCKS error
+    ctx.writeAndFlush(createSOCKS4ErrorResponse()).addListener { closeChannels(ctx) }
+
+    // Release the message
+    ReferenceCountUtil.release(msg)
   }
 
   override fun sendErrorAndClose(ctx: ChannelHandlerContext, msg: Any) {
+
     var response: Socks4CommandResponse? = null
     if (msg is Socks4Message) {
       if (msg is Socks4CommandRequest) {
@@ -136,6 +142,9 @@ internal constructor(
     } else {
       ctx.writeAndFlush(response).addListener { closeChannels(ctx) }
     }
+
+    // Release the message
+    ReferenceCountUtil.release(msg)
   }
 
   private fun ensureChannelTag(ctx: ChannelHandlerContext) {
