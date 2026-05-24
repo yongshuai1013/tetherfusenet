@@ -563,6 +563,33 @@ private constructor(
         return null
       }
 
+      // Handle IPv6 literal notation like [::1](:port)(/path)
+      if (uriWithoutSchema.startsWith("[")) {
+        val bracketEnd = uriWithoutSchema.indexOf("]")
+        if (bracketEnd < 0) {
+          Timber.w { "Invalid IPv6 URI: $uri" }
+          return null
+        }
+
+        val ipv6Host = uriWithoutSchema.substring(1, bracketEnd)
+        val afterBracket = uriWithoutSchema.substring(bracketEnd + 1)
+        val fallbackPort = if (defaultPortBasedOnSchema > 0) defaultPortBasedOnSchema else defaultPort
+        val port =
+            if (afterBracket.startsWith(":")) {
+              afterBracket.substring(1).substringBefore("/").toIntOrNull() ?: fallbackPort
+            } else {
+              fallbackPort
+            }
+
+        val slashIndex = afterBracket.indexOf("/")
+        val path = if (slashIndex >= 0) afterBracket.substring(slashIndex).ifBlank { "/" } else "/"
+        return HttpHostAndPort(
+            resolvedHostName = ipv6Host,
+            resolvedPort = port,
+            proxyCorrectedFilePath = path,
+        )
+      }
+
       val hostAndPort = uriWithoutSchema.split(":")
       val hostAndMaybePath = hostAndPort[0]
 
