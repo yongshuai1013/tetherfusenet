@@ -42,6 +42,7 @@ class Socks4HandlerTest {
             isDebug = true,
             serverSocketTimeout = factory.serverSocketTimeout,
             allowedClients = factory.allowed,
+            blockedClients = factory.blocked,
             tcpSocketCreator = factory.provideTcpChannelCreator(),
         )
 

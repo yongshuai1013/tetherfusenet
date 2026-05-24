@@ -43,6 +43,7 @@ class Socks5HandlerTest {
             isDebug = true,
             serverSocketTimeout = factoryParams.serverSocketTimeout,
             allowedClients = factoryParams.allowed,
+            blockedClients = factoryParams.blocked,
             clientResolver = factoryParams.resolver,
             tcpSocketCreator = factoryParams.provideTcpChannelCreator(),
         )
