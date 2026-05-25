@@ -313,7 +313,6 @@ private fun PreviewMainDialogs(blockers: Collection<HotspotStartBlocker>) {
   MainDialogs(
       state =
           object : MainViewState {
-            override val isSettingsOpen = MutableStateFlow(false)
             override val isShowingQRCodeDialog = MutableStateFlow(false)
             override val isShowingSlowSpeedHelp = MutableStateFlow(false)
             override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
