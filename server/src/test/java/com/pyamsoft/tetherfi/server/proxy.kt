@@ -16,7 +16,7 @@
 
 package com.pyamsoft.tetherfi.server
 
-import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
+import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.LintIgnoreEmptyFunctionBlock
 import com.pyamsoft.pydroid.core.LintIgnoreLongMethod
 import com.pyamsoft.pydroid.core.ThreadEnforcer
@@ -237,7 +237,7 @@ internal suspend fun setupProxy(
                   socketTagger = socketTagger,
                   yoloRepeatDelay = 0.seconds,
                   enforcer = enforcer,
-                  serverStopConsumer = DefaultEventBus(),
+                  serverStopConsumer = EventBus.create(),
                   socketBinder = PassthroughSocketBinder(),
                   expertPreferences = expertPreferences,
                   socketCreator = socketCreator,

@@ -19,7 +19,6 @@ package com.pyamsoft.tetherfi.server
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.bus.EventConsumer
-import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizerImpl
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
@@ -193,14 +192,14 @@ abstract class ServerAppModule {
     @JvmStatic
     @Singleton
     internal fun provideShutdownEventBus(): EventBus<ServerShutdownEvent> {
-      return DefaultEventBus()
+      return EventBus.create()
     }
 
     @Provides
     @JvmStatic
     @Singleton
     internal fun provideStopRequestEventBus(): EventBus<ServerStopRequestEvent> {
-      return DefaultEventBus()
+      return EventBus.create()
     }
   }
 }

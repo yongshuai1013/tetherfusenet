@@ -27,7 +27,6 @@ import android.os.Parcelable
 import androidx.annotation.CheckResult
 import androidx.core.content.ContextCompat
 import com.pyamsoft.pydroid.bus.EventBus
-import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastEvent
@@ -65,7 +64,7 @@ internal constructor(
     )
   }
 
-  private val eventBus = DefaultEventBus<WidiNetworkEvent>()
+  private val eventBus = EventBus.create<WidiNetworkEvent>()
   private val registered = MutableStateFlow(false)
 
   private suspend fun handleStateChangedAction(intent: Intent) {

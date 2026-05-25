@@ -30,7 +30,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
-import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
+import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.LintIgnoreMaxLineLength
 import com.pyamsoft.pydroid.core.LintIgnoreTooGenericExceptionCaught
 import com.pyamsoft.pydroid.core.requireNotNull
@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
 
   private var pydroid: PYDroidActivityDelegate? = null
 
-  private val settingsCommandBus = DefaultEventBus<Unit>()
+  private val settingsCommandBus = EventBus.create<Unit>()
   private var settingsCommandLaunchJob: Job? = null
 
   private fun initializePYDroid() {

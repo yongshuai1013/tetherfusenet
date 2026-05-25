@@ -25,7 +25,6 @@ import androidx.annotation.CheckResult
 import coil3.ImageLoader
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.bus.EventConsumer
-import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.NotifyGuard
 import com.pyamsoft.pydroid.ui.theme.Theming
@@ -207,14 +206,14 @@ internal interface TFAppComponent {
       @JvmStatic
       @Singleton
       internal fun providePermissionRequestBus(): EventBus<PermissionRequests> {
-        return DefaultEventBus()
+        return EventBus.create()
       }
 
       @Provides
       @JvmStatic
       @Singleton
       internal fun providePermissionResponseBus(): EventBus<PermissionResponse> {
-        return DefaultEventBus()
+        return EventBus.create()
       }
 
       @Provides
