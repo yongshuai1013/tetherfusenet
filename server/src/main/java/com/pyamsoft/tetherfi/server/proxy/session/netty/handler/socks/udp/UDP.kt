@@ -33,13 +33,22 @@ import io.netty.channel.socket.DatagramPacket
 import io.netty.handler.codec.socksx.v5.Socks5AddressType
 import io.netty.resolver.DefaultAddressResolverGroup
 import io.netty.util.ReferenceCountUtil
+import io.netty.util.ReferenceCounted
 import java.net.Inet4Address
 import java.net.Inet6Address
 import java.net.InetSocketAddress
 
 object UDP {
 
-  private val VALID_PORT_RANGE = 1..<65535
+  private val VALID_PORT_RANGE = 1..65535
+
+  // An arbitrary amount of leading header space
+  // 2 reserve bytes
+  // 1 fragment byte
+  // 3 address type bytes
+  // 3 more address bytes
+  // 2 port bytes
+  private const val LEADING_HEADER_YOLO_AMOUNT = 11
 
   @CheckResult
   private fun readAddress(
@@ -88,15 +97,15 @@ object UDP {
         Socks5AddressType.DOMAIN -> {
           val addressLength = buf.readUnsignedByte().toInt()
           if (addressLength == 0) {
-            // SOCKS spec says we must fall back to 0 address
-            return "0.0.0.0"
+            Timber.w { "(${channelId}) DROP: zero-length DOMAIN address" }
+            return ""
           }
 
           val sequence = buf.readCharSequence(addressLength, Charsets.US_ASCII).toString()
           if (addressLength == 1 && sequence == "0") {
-            // PySocks delivers a random port with an address of "0"
-            // SOCKS spec says we must fall back to 0 address
-            return "0.0.0.0"
+            // PySocks quirk: sends address "0" for unresolved destinations
+            Timber.w { "(${channelId}) DROP: PySocks zero DOMAIN address" }
+            return ""
           }
 
           return sequence
@@ -119,34 +128,34 @@ object UDP {
       ctx: ChannelHandlerContext,
       msg: DatagramPacket,
       onUnwrapped: (ByteBuf, InetSocketAddress) -> Unit,
-      onError: () -> Unit,
+      onError: (ReferenceCounted) -> Unit,
   ) {
     val buf = msg.content()
     // Drop bad connection
     if (buf == null) {
       Timber.w { "(${channelId}) DROP: Null buffer in packet" }
-      onError()
+      onError(msg)
       return
     }
 
     val reservedByteOne = buf.readByte()
     if (reservedByteOne != RESERVED_BYTE) {
       Timber.w { "(${channelId}) DROP: Expected reserve byte one, but got data: $reservedByteOne" }
-      onError()
+      onError(msg)
       return
     }
 
     val reservedByteTwo = buf.readByte()
     if (reservedByteTwo != RESERVED_BYTE) {
       Timber.w { "(${channelId}) DROP: Expected reserve byte two, but got data: $reservedByteTwo" }
-      onError()
+      onError(msg)
       return
     }
 
     val fragment = buf.readByte()
     if (fragment != FRAGMENT_ZERO) {
       Timber.w { "(${channelId}) DROP: Fragments not supported: $fragment" }
-      onError()
+      onError(msg)
       return
     }
 
@@ -161,19 +170,31 @@ object UDP {
 
     if (destinationAddr.isBlank()) {
       Timber.w { "(${channelId}) DROP: Invalid upstream destination address: $destinationAddr" }
-      onError()
+      onError(msg)
       return
     }
 
     if (destinationPort !in VALID_PORT_RANGE) {
       Timber.w { "(${channelId}) DROP: Invalid upstream destination port: $destinationPort" }
-      onError()
+      onError(msg)
       return
     }
 
     // The rest of the packet is data
     // We must retain this slice or the underlying buffer will be cleaned up too early
     val retainedData = buf.readRetainedSlice(buf.readableBytes())
+
+    // Release the original message at this point
+    ReferenceCountUtil.release(msg)
+
+    val handleUdpUnwrapped = { address: InetSocketAddress ->
+      try {
+        onUnwrapped(retainedData, address)
+      } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
+        Timber.e(e) { "Failed to unwrap UDP data" }
+        onError(retainedData)
+      }
+    }
 
     // Build the destination, unresolved so we do not block using the system DNS
     val destination = InetSocketAddress.createUnresolved(destinationAddr, destinationPort)
@@ -186,8 +207,7 @@ object UDP {
           Timber.e(future.cause()) {
             "Failed to resolve address for UDP unwrap: ${destinationAddr}:${destinationPort}"
           }
-          ReferenceCountUtil.release(retainedData)
-          onError()
+          onError(retainedData)
           return@addListener
         }
 
@@ -196,26 +216,15 @@ object UDP {
           Timber.w {
             "Resolved future returned NULL for udp unwrap: ${destinationAddr}:${destinationPort}"
           }
-          ReferenceCountUtil.release(retainedData)
-          onError()
+          onError(retainedData)
           return@addListener
         }
 
-        try {
-          onUnwrapped(retainedData, resolved)
-        } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
-          ReferenceCountUtil.release(retainedData)
-          throw e
-        }
+        handleUdpUnwrapped(resolved)
       }
     } else {
       // Resolution is not supported, yolo continue?
-      try {
-        onUnwrapped(retainedData, destination)
-      } catch (@LintIgnoreTooGenericExceptionCaught e: Throwable) {
-        ReferenceCountUtil.release(retainedData)
-        throw e
-      }
+      handleUdpUnwrapped(destination)
     }
   }
 
@@ -225,8 +234,7 @@ object UDP {
       sender: InetSocketAddress,
       content: ByteBuf,
   ): ByteBuf {
-    // May be able to initialize with 3
-    return alloc.ioBuffer().apply {
+    return alloc.ioBuffer(LEADING_HEADER_YOLO_AMOUNT + content.readableBytes()).apply {
       // 2 reserved
       val res = RESERVED_BYTE_INT
       writeByte(res)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 pyamsoft
+ * Copyright 2026 pyamsoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import android.content.Context
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.bus.EventConsumer
-import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
 import com.pyamsoft.pydroid.notify.Notifier
 import com.pyamsoft.pydroid.notify.NotifyDispatcher
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
@@ -70,7 +69,7 @@ abstract class ServiceAppModule {
     @JvmStatic
     @Singleton
     internal fun provideNotificationRefreshEventBus(): EventBus<NotificationRefreshEvent> {
-      return DefaultEventBus()
+      return EventBus.create()
     }
 
     // TODO(Peter): Move into some shared module and scope

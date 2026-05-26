@@ -13,7 +13,7 @@ kotlin = "2.3.21"
 coroutines = "1.11.0"
 
 # Us
-pydroid = "29.4.0"
+pydroid = "29.5.0"
 ktor = "3.4.0-PYAMSOFT"
 
 # Square
@@ -22,7 +22,7 @@ timber = "5.0.1"
 
 qrCode = "4.5.0"
 dagger = "2.59.2"
-netty = "4.2.13.Final"
+netty = "4.2.14.Final"
 # Silence SLF4J logging warnings
 slf4j = "2.0.18"
 

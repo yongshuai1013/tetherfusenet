@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 pyamsoft
+ * Copyright 2026 pyamsoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
+import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.LintIgnoreMaxLineLength
 import com.pyamsoft.pydroid.core.LintIgnoreTooGenericExceptionCaught
 import com.pyamsoft.pydroid.core.requireNotNull
@@ -49,17 +52,25 @@ import com.pyamsoft.tetherfi.ui.InstallPYDroidExtras
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
   @Inject @JvmField internal var themeViewModeler: ThemeViewModeler? = null
+
   @Inject @JvmField internal var serviceLauncher: ServiceLauncher? = null
+
   @Inject @JvmField internal var screenOnHandler: ScreenOnHandler? = null
+
   @Inject @JvmField internal var mainViewModel: MainViewModeler? = null
+
   @Inject @JvmField internal var notificationErrorLauncher: NotificationErrorLauncher? = null
 
   private var pydroid: PYDroidActivityDelegate? = null
+
+  private val settingsCommandBus = EventBus.create<Unit>()
+  private var settingsCommandLaunchJob: Job? = null
 
   private fun initializePYDroid() {
     pydroid =
@@ -74,14 +85,13 @@ class MainActivity : ComponentActivity() {
                     // Off.")
                     @LintIgnoreMaxLineLength
                     feature(
-                        "New Netty based engine for HTTP proxy. The new engine is OFF by default. You must opt-in to use it. It will become the default in the next version"
+                        "New Netty based engine for HTTP proxy. The new engine is ON by default, and will become the ONLY engine in the next version."
                     )
 
                     @LintIgnoreMaxLineLength
                     feature(
-                        "New Netty based engine for SOCKS proxy. The new engine is OFF by default. You must opt-in to use it. It will become the default in the next version"
+                        "New Netty based engine for SOCKS proxy. The new engine is ON by default, and will become the ONLY engine in the next version."
                     )
-                    bugfix("Fix an issue where Wi-Fi Direct SSID could be longer than 32 bytes.")
                   }
                 },
         )
@@ -121,7 +131,10 @@ class MainActivity : ComponentActivity() {
 
   private fun handleOpenedWithIntent(intent: Intent) {
     if (intent.action === Intent.ACTION_APPLICATION_PREFERENCES) {
-      mainViewModel.requireNotNull().handleOpenDialog(MainViewDialogs.SETTINGS)
+      // Only attempt one launch emit at a time
+      settingsCommandLaunchJob?.cancel()
+      settingsCommandLaunchJob =
+          lifecycleScope.launch(context = Dispatchers.Default) { settingsCommandBus.emit(Unit) }
     }
   }
 
@@ -136,7 +149,28 @@ class MainActivity : ComponentActivity() {
       val theme by vm.mode.collectAsStateWithLifecycle()
       val isMaterialYou by vm.isMaterialYou.collectAsStateWithLifecycle()
 
+      val allTabs = rememberAllTabs()
+      val pagerState =
+          rememberPagerState(
+              initialPage = 0,
+              initialPageOffsetFraction = 0F,
+              pageCount = { allTabs.size },
+          )
+
       SaveStateDisposableEffect(vm)
+
+      LaunchedEffect(
+          settingsCommandBus,
+          allTabs,
+          pagerState,
+      ) {
+        settingsCommandBus.collect {
+          val settingsIndex = allTabs.indexOfFirst { it == MainView.SETTINGS }
+          if (settingsIndex >= 0) {
+            pagerState.animateScrollToPage(settingsIndex)
+          }
+        }
+      }
 
       TFTheme(
           theme = theme,
@@ -152,6 +186,8 @@ class MainActivity : ComponentActivity() {
         MainEntry(
             modifier = Modifier.fillMaxSize(),
             appName = appName,
+            allTabs = allTabs,
+            pagerState = pagerState,
             onShowInAppRating = { handleShowInAppRating() },
             onUpdateTile = { ProxyTileService.updateTile(this) },
             onLaunchIntent = { safeOpenSettingsIntent(it) },
@@ -187,5 +223,8 @@ class MainActivity : ComponentActivity() {
     screenOnHandler = null
     mainViewModel = null
     notificationErrorLauncher = null
+
+    settingsCommandLaunchJob?.cancel()
+    settingsCommandLaunchJob = null
   }
 }

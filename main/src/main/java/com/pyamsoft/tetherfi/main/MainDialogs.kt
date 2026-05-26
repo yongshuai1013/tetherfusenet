@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 pyamsoft
+ * Copyright 2026 pyamsoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -313,7 +313,6 @@ private fun PreviewMainDialogs(blockers: Collection<HotspotStartBlocker>) {
   MainDialogs(
       state =
           object : MainViewState {
-            override val isSettingsOpen = MutableStateFlow(false)
             override val isShowingQRCodeDialog = MutableStateFlow(false)
             override val isShowingSlowSpeedHelp = MutableStateFlow(false)
             override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 pyamsoft
+ * Copyright 2026 pyamsoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package com.pyamsoft.tetherfi.server
 
+import androidx.annotation.CheckResult
+
 /**
  * What the fuck is this
  * https://stackoverflow.com/questions/10006459/regular-expression-for-ip-address-validation
@@ -26,3 +28,18 @@ package com.pyamsoft.tetherfi.server
 val IPV4_ADDRESS_REGEX =
     """^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$"""
         .toRegex()
+
+@CheckResult
+fun isIp4Address(hostOrIp: String): Boolean {
+  return IPV4_ADDRESS_REGEX.matches(hostOrIp)
+}
+
+@CheckResult
+fun isIp6Address(hostOrIp: String): Boolean {
+  return hostOrIp.contains(':')
+}
+
+@CheckResult
+fun isIpAddress(hostOrIp: String): Boolean {
+  return isIp4Address(hostOrIp) || isIp6Address(hostOrIp)
+}

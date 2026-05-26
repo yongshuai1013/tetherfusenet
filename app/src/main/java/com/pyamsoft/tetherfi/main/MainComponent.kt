@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 pyamsoft
+ * Copyright 2026 pyamsoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.pyamsoft.tetherfi.connections.ConnectionComponent
 import com.pyamsoft.tetherfi.core.ActivityScope
 import com.pyamsoft.tetherfi.info.InfoComponent
 import com.pyamsoft.tetherfi.qr.QRCodeComponent
+import com.pyamsoft.tetherfi.settings.SettingsComponent
 import com.pyamsoft.tetherfi.status.StatusComponent
 import dagger.Subcomponent
 
@@ -38,6 +39,8 @@ internal interface MainComponent {
   @CheckResult fun plusInfo(): InfoComponent.Factory
 
   @CheckResult fun plusQR(): QRCodeComponent.Factory
+
+  @CheckResult fun plusSettings(): SettingsComponent.Factory
 
   fun inject(activity: MainActivity)
 

@@ -59,21 +59,6 @@ private constructor(
 
   private var byteCountJob: Job? = null
 
-  @CheckResult
-  private fun getWritebackChannel(ctx: ChannelHandlerContext): Channel? {
-    return ctx.channel().attr(WRITE_BACK_CHANNEL).get()
-  }
-
-  @CheckResult
-  private fun getDirection(ctx: ChannelHandlerContext): Direction? {
-    return ctx.channel().attr(DIRECTION).get()
-  }
-
-  @CheckResult
-  private fun getChannelTag(ctx: ChannelHandlerContext): String? {
-    return ctx.channel().attr(TAG).get()
-  }
-
   private fun ensureChannelTag(ctx: ChannelHandlerContext) {
     applyChannelId {
       val tag = getChannelTag(ctx)
@@ -161,14 +146,14 @@ private constructor(
   }
 
   override fun sendErrorAndClose(ctx: ChannelHandlerContext, msg: Any) {
-    val channelId = getChannelId()
+    closeChannels(ctx)
 
-    // Can't do as this is a bytes based implementation
-    Timber.w { "(${channelId}) Can't send generic error on RelayHandler" }
-    ctx.flushAndClose()
+    // Release the original message
+    ReferenceCountUtil.release(msg)
   }
 
   override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
+    // Inbound point, msg.refCount = 1
     ensureChannelTag(ctx)
     val channelId = getChannelId()
 
@@ -209,13 +194,13 @@ private constructor(
     scope.launch(context = Dispatchers.IO) { allowedClients.seen(client) }
 
     // Grab the amount BEFORE the data buffer is released
-    val retained = ReferenceCountUtil.retain(bytes)
-    val amountMoved = retained.readableBytes()
+    val amountMoved = bytes.readableBytes()
 
     // Keep count
     bytesMoved.addAndGet(amountMoved)
 
-    writeToChannel.writeAndFlush(retained).addListener { ReferenceCountUtil.release(retained) }
+    // Write here claims the msg
+    writeToChannel.writeAndFlush(bytes)
   }
 
   override fun channelWritabilityChanged(ctx: ChannelHandlerContext) {
@@ -255,6 +240,21 @@ private constructor(
     @JvmStatic
     private val DIRECTION: AttributeKey<Direction> =
         AttributeKey.newInstance("${RelayHandler::class.simpleName}-DIRECTION")
+
+    @CheckResult
+    private fun getWritebackChannel(ctx: ChannelHandlerContext): Channel? {
+      return ctx.channel().attr(WRITE_BACK_CHANNEL).get()
+    }
+
+    @CheckResult
+    private fun getDirection(ctx: ChannelHandlerContext): Direction? {
+      return ctx.channel().attr(DIRECTION).get()
+    }
+
+    @CheckResult
+    private fun getChannelTag(ctx: ChannelHandlerContext): String? {
+      return ctx.channel().attr(TAG).get()
+    }
 
     @JvmStatic
     @CheckResult

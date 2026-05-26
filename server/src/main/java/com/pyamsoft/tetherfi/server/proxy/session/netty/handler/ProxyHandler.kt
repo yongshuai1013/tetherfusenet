@@ -23,10 +23,13 @@ import com.pyamsoft.pydroid.core.LintIgnoreTooManyFunctions
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.clients.TetherClient
+import com.pyamsoft.tetherfi.server.isIpAddress
 import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import io.netty.util.AttributeKey
+import io.netty.util.NetUtil
+import java.net.InetAddress
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.io.IOException
 
@@ -64,11 +67,6 @@ internal constructor(
     channel.apply { attr(CLIENT).set(null) }
 
     channel.flushAndClose()
-  }
-
-  @CheckResult
-  protected fun getTetherClient(ctx: ChannelHandlerContext): TetherClient? {
-    return ctx.channel().attr(CLIENT).get()
   }
 
   final override fun channelActive(ctx: ChannelHandlerContext) {
@@ -138,7 +136,109 @@ internal constructor(
 
     private const val CONNECTION_RESET_MESSAGE = "Connection reset by peer"
 
-    @JvmStatic protected val VALID_PORT_RANGE = 1..<65535
+    private const val IPV4_LOCALHOST_BYTE_IDENTIFIER = 127.toByte()
+    private val IPV6_LOCALHOST_BYTE_ARRAY =
+        byteArrayOf(
+            // First four
+            0,
+            0,
+            0,
+            0,
+            // Second four
+            0,
+            0,
+            0,
+            0,
+            // third four
+            0,
+            0,
+            0,
+            0,
+            // blah blah blah 1 right?
+            0,
+            0,
+            0,
+            1,
+        )
+
+    @JvmStatic protected val VALID_PORT_RANGE = 1..65535
+
+    @CheckResult
+    private fun isByteAddressLocalhostAddress(bytes: ByteArray): Boolean {
+      if (bytes.contentEquals(NetUtil.LOCALHOST4.address)) {
+        return true
+      }
+
+      if (bytes.contentEquals(NetUtil.LOCALHOST6.address)) {
+        return true
+      }
+
+      return when (bytes.size) {
+        // IPv4 - is this a 127.X.X.X
+        4 -> bytes[0] == IPV4_LOCALHOST_BYTE_IDENTIFIER
+        // IPv6 - is this ::1 (covered by the if statement but just in case this logic changes in
+        // the future?)
+        16 -> bytes.contentEquals(IPV6_LOCALHOST_BYTE_ARRAY)
+        // What the fuck lol
+        else -> false
+      }
+    }
+
+    /** Block localhost and localdomain addressing */
+    @CheckResult
+    private fun isLocalBlockedAddress(ipLiteral: String): Boolean {
+      val bytes = NetUtil.createByteArrayFromIpAddressString(ipLiteral)
+      if (bytes == null) {
+        // Was not a valid ip address
+        Timber.w { "Not a valid IP address: $ipLiteral" }
+        return false
+      }
+
+      // Fast compare
+      if (isByteAddressLocalhostAddress(bytes)) {
+        return true
+      }
+
+      // Otherwise slower compare
+      // NON-BLOCKING :)
+      val address = InetAddress.getByAddress(bytes)
+
+      // No loopback, no wildcard (ipv6)
+      return address.isLoopbackAddress || address.isAnyLocalAddress
+    }
+
+    /** Sending traffic to the localhost is NOT a valid destination */
+    @JvmStatic
+    @CheckResult
+    protected fun isBlockedLocalAddress(hostOrIp: String): Boolean {
+      // Reject "localhost"
+      if (hostOrIp.equals("localhost", ignoreCase = true)) {
+        return true
+      }
+
+      // Reject ".localdomain"
+      if (hostOrIp.equals("localhost.localdomain", ignoreCase = true)) {
+        return true
+      }
+
+      // Only check IP literals — hostname DNS resolution happens inside Netty at connect time
+      val isLiteralIpAddress = isIpAddress(hostOrIp)
+      if (isLiteralIpAddress) {
+        return isLocalBlockedAddress(hostOrIp)
+      }
+
+      // TODO(Peter): Do we want to check hostnames here?
+      //              Is there ever a situation where a client could be assigned a host name
+      //              No? since we are just dealing with DNS
+      //              Do we really care that much?
+      return false
+    }
+
+    @JvmStatic
+    @CheckResult
+    protected fun getTetherClient(ctx: ChannelHandlerContext): TetherClient? {
+      return ctx.channel().attr(CLIENT).get()
+    }
 
     @JvmStatic
     private val CLIENT: AttributeKey<TetherClient> =

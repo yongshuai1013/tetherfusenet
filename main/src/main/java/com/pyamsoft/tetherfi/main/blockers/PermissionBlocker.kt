@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 pyamsoft
+ * Copyright 2026 pyamsoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,15 +54,16 @@ internal fun PermissionBlocker(
 
   // Permission needed is different on T
   val locationPermission =
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-          stringResource(R.string.block_permission_type_location)
-        } else {
-          stringResource(R.string.block_permission_type_nearby)
-        }
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+        stringResource(R.string.block_permission_type_location)
+      } else {
+        stringResource(R.string.block_permission_type_nearby)
+      }
 
-  val localNetworkPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN) {
-    stringResource(R.string.block_permission_type_local_network)
-  } else ""
+  val localNetworkPermission =
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN) {
+        stringResource(R.string.block_permission_type_local_network)
+      } else ""
 
   CardDialog(
       modifier = modifier,
@@ -90,17 +91,23 @@ internal fun PermissionBlocker(
             modifier =
                 Modifier.padding(horizontal = MaterialTheme.keylines.content)
                     .padding(top = MaterialTheme.keylines.content),
-            text = stringResource(R.string.block_permission_description, appName, locationPermission),
+            text =
+                stringResource(R.string.block_permission_description, appName, locationPermission),
             style = MaterialTheme.typography.bodyLarge,
         )
 
         if (localNetworkPermission.isNotBlank()) {
           Text(
-            modifier =
-              Modifier.padding(horizontal = MaterialTheme.keylines.content)
-                .padding(top = MaterialTheme.keylines.baseline),
-            text = stringResource(R.string.block_permission_description, appName, localNetworkPermission),
-            style = MaterialTheme.typography.bodyLarge,
+              modifier =
+                  Modifier.padding(horizontal = MaterialTheme.keylines.content)
+                      .padding(top = MaterialTheme.keylines.baseline),
+              text =
+                  stringResource(
+                      R.string.block_permission_description,
+                      appName,
+                      localNetworkPermission,
+                  ),
+              style = MaterialTheme.typography.bodyLarge,
           )
         }
       }

@@ -45,6 +45,7 @@ class Http1HandlerTest {
             isDebug = true,
             serverSocketTimeout = factory.serverSocketTimeout,
             allowedClients = factory.allowed,
+            blockedClients = factory.blocked,
             tcpSocketCreator = factory.provideTcpChannelCreator(),
         )
     return factory.create(Unit)

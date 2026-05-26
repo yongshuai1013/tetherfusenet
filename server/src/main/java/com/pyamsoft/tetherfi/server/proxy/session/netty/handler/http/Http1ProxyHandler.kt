@@ -106,14 +106,15 @@ private constructor(
   private fun queueOrDeliverOutboundMessage(msg: Any) {
     val outbound = outboundChannel
 
-    // Retain the message until used
-    val retained = ReferenceCountUtil.retain(msg)
     if (outbound == null) {
+      // Retain the message until used
+      val retained = ReferenceCountUtil.retain(msg)
+
       // Queue for later
       messageQueue.add(retained)
     } else {
       // Use immediately and release
-      outbound.writeAndFlush(retained).addListener { ReferenceCountUtil.release(retained) }
+      outbound.writeAndFlush(msg)
     }
   }
 
@@ -124,7 +125,11 @@ private constructor(
       needsFlush = queued.isNotEmpty()
       if (needsFlush) {
         for (q in queued) {
-          channel.write(q).addListener { ReferenceCountUtil.release(q) }
+          // Write here claims the original msg
+          channel.write(q)
+
+          // Release here claims the ref count from the "retain" operation in queue function
+          ReferenceCountUtil.release(q)
         }
       }
     } finally {
@@ -171,6 +176,30 @@ private constructor(
       Timber.w {
         "(${channelId}) DROP: $tag Invalid upstream destination port: ${parsed.resolvedPort}"
       }
+      sendErrorAndClose(ctx, msg)
+      return
+    }
+
+    // Make sure that the HOST header matches the destination requested
+    // if the host header is provided (most of the time it is)
+    val hostHeader = msg.headers().get(HttpHeaderNames.HOST)
+    if (!hostHeader.isNullOrBlank()) {
+      val targetAuthority = "${parsed.resolvedHostName}:${parsed.resolvedPort}"
+      val hostMatches =
+          hostHeader.equals(targetAuthority, ignoreCase = true) ||
+              hostHeader.equals(parsed.resolvedHostName, ignoreCase = true)
+      if (!hostMatches) {
+        Timber.w {
+          "($channelId) DROP: $tag Host '$hostHeader' != CONNECT target '$targetAuthority'"
+        }
+        sendErrorAndClose(ctx, msg)
+        return
+      }
+    }
+
+    // Don't allow sending messages to local destinations
+    if (isBlockedLocalAddress(parsed.resolvedHostName)) {
+      Timber.w { "($channelId) DROP: $tag Blocked local address: ${parsed.resolvedHostName}" }
       sendErrorAndClose(ctx, msg)
       return
     }
@@ -232,15 +261,22 @@ private constructor(
         client = client,
     )
 
+    // Retain through listener creation
+    val retained = ReferenceCountUtil.retain(msg)
+
+    // At this point we are done with the original message and can release it
+    ReferenceCountUtil.release(msg)
+
+    // We start up a future listener here
     future.addListener { future ->
       if (!future.isSuccess) {
         Timber.e(future.cause()) { "(${channelId}) $tag Unable to connect to $parsed" }
-        sendErrorAndClose(ctx, msg)
+        sendErrorAndClose(ctx, retained)
         return@addListener
       }
 
-      // Tell proxy we've established connection
-      val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)
+      // We are done with the original message at this point and can release it
+      ReferenceCountUtil.release(retained)
 
       // Enable auto-read once connection is established
       serverChannel.config().isAutoRead = true
@@ -269,10 +305,18 @@ private constructor(
       Timber.d { "(${channelId}) Write $tag to $parsed" }
 
       // Tell proxy we've established connection
-      ctx.writeAndFlush(response).addListener {
-        // Remove the http server codec only after 200 OK is fully written
-        pipeline.dropHandler(HttpServerCodec::class)
-      }
+      //
+      // Write here claims the msg
+      ctx.writeAndFlush(
+              DefaultFullHttpResponse(
+                  HttpVersion.HTTP_1_1,
+                  HttpResponseStatus.OK,
+              )
+          )
+          .addListener {
+            // Remove the http server codec only after 200 OK is fully written
+            pipeline.dropHandler(HttpServerCodec::class)
+          }
     }
   }
 
@@ -298,6 +342,13 @@ private constructor(
 
     if (parsed.resolvedPort !in VALID_PORT_RANGE) {
       Timber.w { "(${channelId}) DROP: $tag Invalid upstream destination port: $parsed" }
+      sendErrorAndClose(ctx, msg)
+      return
+    }
+
+    // Don't allow sending messages to local destinations
+    if (isBlockedLocalAddress(parsed.resolvedHostName)) {
+      Timber.w { "($channelId) DROP: $tag Blocked local address: ${parsed.resolvedHostName}" }
       sendErrorAndClose(ctx, msg)
       return
     }
@@ -362,30 +413,40 @@ private constructor(
         client = client,
     )
 
+    // Adjust the URL to be relative to the new host
+    msg.uri = parsed.proxyCorrectedFilePath
+
+    // Strip hop-by-hop headers before forwarding
+    val headers = msg.headers()
+
+    @Suppress("DEPRECATION") headers.remove(HttpHeaderNames.KEEP_ALIVE)
+    headers.remove(HttpHeaderNames.CONNECTION)
+
+    headers.remove(HttpHeaderNames.TRANSFER_ENCODING)
+    headers.remove(HttpHeaderNames.UPGRADE)
+    headers.remove(HttpHeaderNames.TE)
+    headers.remove(HttpHeaderNames.TRAILER)
+
+    @Suppress("DEPRECATION") headers.remove(HttpHeaderNames.PROXY_CONNECTION)
+    headers.remove(HttpHeaderNames.PROXY_AUTHENTICATE)
+    headers.remove(HttpHeaderNames.PROXY_AUTHORIZATION)
+
+    // Force Host to match the URI target, not whatever the client sent
+    headers.set(HttpHeaderNames.HOST, parsed.resolvedHostName)
+
+    // Retain through listener creation
+    val retained = ReferenceCountUtil.retain(msg)
+
+    // Original message is done at this point
+    ReferenceCountUtil.release(msg)
+
+    // No try/finally — ownership is tracked per-branch.
     future.addListener { future ->
       if (!future.isSuccess) {
         Timber.e(future.cause()) { "Unable to connect to $parsed" }
-        sendErrorAndClose(ctx, msg)
+        sendErrorAndClose(ctx, retained)
         return@addListener
       }
-
-      // Adjust the URL to be relative to the new host
-      msg.uri = parsed.proxyCorrectedFilePath
-
-      // Strip hop-by-hop headers before forwarding
-      val headers = msg.headers()
-
-      @Suppress("DEPRECATION") headers.remove(HttpHeaderNames.KEEP_ALIVE)
-      headers.remove(HttpHeaderNames.CONNECTION)
-
-      headers.remove(HttpHeaderNames.TRANSFER_ENCODING)
-      headers.remove(HttpHeaderNames.UPGRADE)
-      headers.remove(HttpHeaderNames.TE)
-      headers.remove(HttpHeaderNames.TRAILER)
-
-      @Suppress("DEPRECATION") headers.remove(HttpHeaderNames.PROXY_CONNECTION)
-      headers.remove(HttpHeaderNames.PROXY_AUTHENTICATE)
-      headers.remove(HttpHeaderNames.PROXY_AUTHORIZATION)
 
       // Enable auto-read once connection is established
       serverChannel.config().isAutoRead = true
@@ -413,11 +474,9 @@ private constructor(
       // Replay the initial request
       Timber.d { "($channelId) Forward connect to $parsed" }
 
-      val retained = ReferenceCountUtil.retain(msg)
+      // Success: writeAndFlush transfers ownership of retained to Netty.
+      // Netty releases retained after encoding — do NOT release again.
       outbound.writeAndFlush(retained).addListener {
-        // Release held memory
-        ReferenceCountUtil.release(retained)
-
         // Hold onto this channel for future requests to immediately fire off to it
         assignOutboundChannel(outbound)
 
@@ -463,29 +522,41 @@ private constructor(
   }
 
   override fun sendErrorAndClose(ctx: ChannelHandlerContext, msg: Any) {
-    val response = createHttpErrorResponse()
-    ctx.writeAndFlush(response).addListener { closeChannels(ctx) }
+    // Write here claims the msg
+    // response.refCount = 0
+    ctx.writeAndFlush(createHttpErrorResponse()).addListener { closeChannels(ctx) }
+
+    // We should also release the original msg
+    ReferenceCountUtil.release(msg)
   }
 
   override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
-    try {
-      ensureChannelTag(ctx)
-      val channelId = getChannelId()
+    // Inbound point, msg.refCount = 1
 
-      if (msg is HttpRequest) {
+    ensureChannelTag(ctx)
+    val channelId = getChannelId()
+
+    when (msg) {
+      is HttpRequest -> {
         if (msg.method() == HttpMethod.CONNECT) {
           handleHttpsConnect(ctx, channelId, msg)
         } else {
           handleHttpForward(ctx, channelId, msg)
         }
-      } else if (msg is HttpContent) {
+      }
+
+      is HttpContent -> {
+        // Message queued for later, no release needed
+        // or is immediately written and claimed by netty, no release needed
         queueOrDeliverOutboundMessage(msg)
-      } else {
+      }
+
+      else -> {
         Timber.w { "($channelId) MSG was not HTTP based: $msg" }
+
+        // Message is passed on, no release needed
         super.channelRead(ctx, msg)
       }
-    } finally {
-      ReferenceCountUtil.release(msg)
     }
   }
 
@@ -507,7 +578,7 @@ private constructor(
 
       // TODO common code for port validation
       @LintIgnoreMagicNumber
-      if (defaultPort !in 0..65335) {
+      if (defaultPort !in 0..65535) {
         Timber.w { "Invalid default port: $defaultPort" }
         return null
       }
@@ -532,6 +603,34 @@ private constructor(
       if (uriWithoutSchema.isBlank()) {
         Timber.w { "No URI without schema from: $uri" }
         return null
+      }
+
+      // Handle IPv6 literal notation like [::1](:port)(/path)
+      if (uriWithoutSchema.startsWith("[")) {
+        val bracketEnd = uriWithoutSchema.indexOf("]")
+        if (bracketEnd < 0) {
+          Timber.w { "Invalid IPv6 URI: $uri" }
+          return null
+        }
+
+        val ipv6Host = uriWithoutSchema.substring(1, bracketEnd)
+        val afterBracket = uriWithoutSchema.substring(bracketEnd + 1)
+        val fallbackPort =
+            if (defaultPortBasedOnSchema > 0) defaultPortBasedOnSchema else defaultPort
+        val port =
+            if (afterBracket.startsWith(":")) {
+              afterBracket.substring(1).substringBefore("/").toIntOrNull() ?: fallbackPort
+            } else {
+              fallbackPort
+            }
+
+        val slashIndex = afterBracket.indexOf("/")
+        val path = if (slashIndex >= 0) afterBracket.substring(slashIndex).ifBlank { "/" } else "/"
+        return HttpHostAndPort(
+            resolvedHostName = ipv6Host,
+            resolvedPort = port,
+            proxyCorrectedFilePath = path,
+        )
       }
 
       val hostAndPort = uriWithoutSchema.split(":")

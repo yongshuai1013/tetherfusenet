@@ -38,6 +38,7 @@ import io.netty.handler.codec.socksx.v4.Socks4CommandRequest
 import io.netty.handler.codec.socksx.v5.Socks5CommandRequest
 import io.netty.handler.logging.LogLevel
 import io.netty.handler.logging.LoggingHandler
+import io.netty.util.ReferenceCountUtil
 import java.net.InetSocketAddress
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -112,6 +113,13 @@ internal constructor(
       return
     }
 
+    // Don't allow sending messages to local destinations
+    if (isBlockedLocalAddress(dstAddr)) {
+      Timber.w { "($channelId) DROP: $tag Blocked local address: $dstAddr" }
+      sendFailureAndClose(ctx, msg)
+      return
+    }
+
     val serverChannel = ctx.channel()
     val remoteClient = serverChannel.remoteAddress().cast<InetSocketAddress>()
     if (remoteClient == null) {
@@ -169,10 +177,16 @@ internal constructor(
         client = client,
     )
 
+    // Retain a copy through listener connection
+    val retained = ReferenceCountUtil.retain(msg)
+
+    // Release original message
+    ReferenceCountUtil.release(msg)
+
     connectSocket.addListener { future ->
       if (!future.isSuccess) {
         Timber.e(future.cause()) { "$tag proxied outbound failed" }
-        sendFailureAndClose(ctx, msg)
+        sendFailureAndClose(ctx, retained)
         return@addListener
       }
 
@@ -185,7 +199,8 @@ internal constructor(
       )
 
       // Tell proxy we've established connection
-      publishConnectSuccess(ctx, tag, channelId, msg, outbound)
+      // This will consume the retained message
+      publishConnectSuccess(ctx, tag, channelId, retained, outbound)
 
       // Drop down to raw TCP
       val pipeline = ctx.pipeline()

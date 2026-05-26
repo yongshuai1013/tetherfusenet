@@ -109,6 +109,10 @@ internal constructor(
       return
     }
 
+    // Release the original message
+    ReferenceCountUtil.release(msg)
+
+    // Write the new response
     ctx.writeAndFlush(
         DefaultSocks4CommandResponse(
             Socks4CommandStatus.SUCCESS,
@@ -119,10 +123,15 @@ internal constructor(
   }
 
   override fun sendFailureAndClose(ctx: ChannelHandlerContext, msg: Socks4CommandRequest) {
-    sendErrorAndClose(ctx, msg)
+    // Publish a SOCKS error
+    ctx.writeAndFlush(createSOCKS4ErrorResponse()).addListener { closeChannels(ctx) }
+
+    // Release the message
+    ReferenceCountUtil.release(msg)
   }
 
   override fun sendErrorAndClose(ctx: ChannelHandlerContext, msg: Any) {
+
     var response: Socks4CommandResponse? = null
     if (msg is Socks4Message) {
       if (msg is Socks4CommandRequest) {
@@ -137,6 +146,9 @@ internal constructor(
     } else {
       ctx.writeAndFlush(response).addListener { closeChannels(ctx) }
     }
+
+    // Release the message
+    ReferenceCountUtil.release(msg)
   }
 
   private fun ensureChannelTag(ctx: ChannelHandlerContext) {
@@ -147,23 +159,19 @@ internal constructor(
   }
 
   override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
-    try {
-      ensureChannelTag(ctx)
-      val channelId = getChannelId()
+    ensureChannelTag(ctx)
+    val channelId = getChannelId()
 
-      if (msg is Socks4Message) {
-        if (msg is Socks4CommandRequest) {
-          handleSocks4CommandRequest(ctx, channelId, msg)
-        } else {
-          Timber.w { "(${channelId}) Unknown SOCKS4 Message: $msg" }
-          sendErrorAndClose(ctx, msg)
-        }
+    if (msg is Socks4Message) {
+      if (msg is Socks4CommandRequest) {
+        handleSocks4CommandRequest(ctx, channelId, msg)
       } else {
-        Timber.w { "(${channelId}) Unknown Message: $msg" }
-        super.channelRead(ctx, msg)
+        Timber.w { "(${channelId}) Unknown SOCKS4 Message: $msg" }
+        sendErrorAndClose(ctx, msg)
       }
-    } finally {
-      ReferenceCountUtil.release(msg)
+    } else {
+      Timber.w { "(${channelId}) Unknown Message: $msg" }
+      super.channelRead(ctx, msg)
     }
   }
 

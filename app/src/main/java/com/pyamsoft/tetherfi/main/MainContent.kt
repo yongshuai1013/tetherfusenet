@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 pyamsoft
+ * Copyright 2026 pyamsoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import com.pyamsoft.tetherfi.behavior.BehaviorEntry
 import com.pyamsoft.tetherfi.connections.ConnectionEntry
 import com.pyamsoft.tetherfi.info.InfoEntry
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.settings.SettingsEntry
 import com.pyamsoft.tetherfi.status.StatusEntry
 import com.pyamsoft.tetherfi.ui.ServerPortTypes
 import com.pyamsoft.tetherfi.ui.ServerViewState
@@ -74,6 +75,7 @@ fun MainContent(
   val behaviorLazyListState = rememberLazyListState()
   val infoLazyListState = rememberLazyListState()
   val connectionLazyListState = rememberLazyListState()
+  val settingsLazyListState = rememberLazyListState()
 
   HorizontalPager(
       modifier = modifier,
@@ -138,6 +140,12 @@ fun MainContent(
             appName = appName,
             lazyListState = connectionLazyListState,
             serverViewState = state,
+        )
+      }
+      MainView.SETTINGS -> {
+        SettingsEntry(
+            modifier = Modifier.fillMaxSize(),
+            lazyListState = settingsLazyListState,
         )
       }
     }

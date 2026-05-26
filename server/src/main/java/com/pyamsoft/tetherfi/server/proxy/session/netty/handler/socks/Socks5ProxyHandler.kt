@@ -104,12 +104,15 @@ internal constructor(
     )
   }
 
-  private fun handleSocks5InitialRequest(ctx: ChannelHandlerContext) {
+  private fun handleSocks5InitialRequest(ctx: ChannelHandlerContext, msg: Socks5InitialRequest) {
     // We do not care about auth
     ctx.writeAndFlush(DefaultSocks5InitialResponse(Socks5AuthMethod.NO_AUTH))
 
     // Now that the initial decoder has self-removed, add the command decoder
     ctx.pipeline().addBefore(ctx.name(), null, Socks5CommandRequestDecoder())
+
+    // Mark message as done
+    ReferenceCountUtil.release(msg)
   }
 
   @LintIgnoreLongMethod
@@ -172,26 +175,35 @@ internal constructor(
         tcpControlAddress = tcpControlAddress,
     )
 
+    // Retain a copy through listener connection
+    val retained = ReferenceCountUtil.retain(msg)
+
+    // Release original message
+    ReferenceCountUtil.release(msg)
+
     udpControl.addListener { future ->
       if (!future.isSuccess) {
         Timber.e(future.cause()) { "($channelId) DROP $tag proxied outbound failed" }
-        sendFailureAndClose(ctx, msg)
+        sendFailureAndClose(ctx, retained)
         return@addListener
       }
 
       val relayControl = udpRelay.localAddress()
       if (relayControl == null) {
         Timber.w { "($channelId) DROP $tag proxied outbound remote==null" }
-        sendFailureAndClose(ctx, msg)
+        sendFailureAndClose(ctx, retained)
         return@addListener
       }
 
       val relayControlAddress = relayControl.cast<InetSocketAddress>()
       if (relayControlAddress == null) {
         Timber.w { "($channelId) DROP $tag proxied outbound remote is not InetSocketAddress" }
-        sendFailureAndClose(ctx, msg)
+        sendFailureAndClose(ctx, retained)
         return@addListener
       }
+
+      // Release the message now that we are in the listener
+      ReferenceCountUtil.release(retained)
 
       // Drop down to raw TCP
       val pipeline = ctx.pipeline()
@@ -245,6 +257,9 @@ internal constructor(
 
   override fun sendFailureAndClose(ctx: ChannelHandlerContext, msg: Socks5CommandRequest) {
     ctx.writeAndFlush(createSOCKS5CommandFailureResponse(msg)).addListener { closeChannels(ctx) }
+
+    // Release the message
+    ReferenceCountUtil.release(msg)
   }
 
   override fun isConnectMessageType(msg: Socks5CommandRequest): Boolean {
@@ -277,6 +292,10 @@ internal constructor(
       return
     }
 
+    // Release the original message
+    ReferenceCountUtil.release(msg)
+
+    // Write the new response
     ctx.writeAndFlush(
         DefaultSocks5CommandResponse(
             Socks5CommandStatus.SUCCESS,
@@ -302,6 +321,9 @@ internal constructor(
     } else {
       ctx.writeAndFlush(response).addListener { closeChannels(ctx) }
     }
+
+    // Release the message
+    ReferenceCountUtil.release(msg)
   }
 
   private fun ensureChannelTag(ctx: ChannelHandlerContext) {
@@ -312,32 +334,28 @@ internal constructor(
   }
 
   override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
-    try {
-      ensureChannelTag(ctx)
+    ensureChannelTag(ctx)
 
-      val channelId = getChannelId()
+    val channelId = getChannelId()
 
-      if (msg is Socks5Message) {
-        when (msg) {
-          is Socks5InitialRequest -> {
-            handleSocks5InitialRequest(ctx)
-          }
-
-          is Socks5CommandRequest -> {
-            handleSocks5CommandRequest(ctx, channelId, msg)
-          }
-
-          else -> {
-            Timber.w { "(${channelId}) Unknown SOCKS5 Message: $msg" }
-            sendErrorAndClose(ctx, msg)
-          }
+    if (msg is Socks5Message) {
+      when (msg) {
+        is Socks5InitialRequest -> {
+          handleSocks5InitialRequest(ctx, msg)
         }
-      } else {
-        Timber.w { "($channelId) Unknown Message: $msg" }
-        super.channelRead(ctx, msg)
+
+        is Socks5CommandRequest -> {
+          handleSocks5CommandRequest(ctx, channelId, msg)
+        }
+
+        else -> {
+          Timber.w { "(${channelId}) Unknown SOCKS5 Message: $msg" }
+          sendErrorAndClose(ctx, msg)
+        }
       }
-    } finally {
-      ReferenceCountUtil.release(msg)
+    } else {
+      Timber.w { "($channelId) Unknown Message: $msg" }
+      super.channelRead(ctx, msg)
     }
   }
 

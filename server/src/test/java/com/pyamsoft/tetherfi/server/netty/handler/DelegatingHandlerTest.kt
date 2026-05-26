@@ -54,6 +54,7 @@ class DelegatingHandlerTest {
             isHttpEnabled = factoryParams.isHttpEnabled,
             serverSocketTimeout = factoryParams.serverSocketTimeout,
             allowedClients = factoryParams.allowed,
+            blockedClients = factoryParams.blocked,
             clientResolver = factoryParams.resolver,
         )
 

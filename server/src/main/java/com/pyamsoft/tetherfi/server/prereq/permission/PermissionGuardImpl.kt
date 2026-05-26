@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 pyamsoft
+ * Copyright 2026 pyamsoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,14 +74,14 @@ internal constructor(
         }
 
     private val LOCAL_NETWORK_PERMISSIONS =
-      // On API >= 37, we require location permission
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN) {
-        listOf(
-          android.Manifest.permission.ACCESS_LOCAL_NETWORK,
-        )
-      } else {
-        // Nothing needed on lower
-        emptyList()
-      }
+        // On API >= 37, we require location permission
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN) {
+          listOf(
+              android.Manifest.permission.ACCESS_LOCAL_NETWORK,
+          )
+        } else {
+          // Nothing needed on lower
+          emptyList()
+        }
   }
 }

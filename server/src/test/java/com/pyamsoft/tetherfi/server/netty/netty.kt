@@ -316,7 +316,7 @@ internal object TestSetup {
         assert(closedCount.get() == 0)
         assert(errorCount.get() == 0)
 
-        val nettyJob = nettyScope.launch { proxy.start(scope = nettyScope) }
+        val nettyJob = nettyScope.launch { proxy.start() }
 
         // Assert netty is alive
         assert(nettyJob.isActive)
