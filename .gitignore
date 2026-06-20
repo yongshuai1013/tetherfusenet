@@ -16,3 +16,9 @@ package.json
 
 # Kotlin
 .kotlin
+
+# Keystores
+*.jks
+keystore
+*-keystore
+*.keystore
