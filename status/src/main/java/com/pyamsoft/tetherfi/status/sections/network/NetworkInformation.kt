@@ -72,7 +72,6 @@ internal fun LazyListScope.renderNetworkInformation(
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onTogglePasswordVisibility: () -> Unit,
-
     onHttpEnabledChanged: (Boolean) -> Unit,
     onSocksEnabledChanged: (Boolean) -> Unit,
     onPortChanged: (Int) -> Unit,
@@ -154,7 +153,7 @@ internal fun LazyListScope.renderNetworkInformation(
         onPasswordChanged = onPasswordChanged,
         onHttpEnabledChanged = onHttpEnabledChanged,
         onSocksEnabledChanged = onSocksEnabledChanged,
-      onPortChanged = onPortChanged,
+        onPortChanged = onPortChanged,
         onTogglePasswordVisibility = onTogglePasswordVisibility,
         onEnableChangeFailed = onEnableChangeFailed,
     )
@@ -205,7 +204,7 @@ private fun PreviewNetworkInformation(
         onJumpToHowTo = {},
         onHttpEnabledChanged = {},
         onSocksEnabledChanged = {},
-      onPortChanged = {},
+        onPortChanged = {},
         onSsidChanged = {},
         onPasswordChanged = {},
         onShowHotspotError = {},

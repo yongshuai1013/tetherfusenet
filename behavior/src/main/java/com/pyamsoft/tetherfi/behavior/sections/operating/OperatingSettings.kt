@@ -25,7 +25,6 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.behavior.BehaviorViewState
 import com.pyamsoft.tetherfi.behavior.R
 import com.pyamsoft.tetherfi.ui.Label
-import com.pyamsoft.tetherfi.ui.ServerViewState
 
 private enum class OperatingSettingsContentTypes {
   LABEL,

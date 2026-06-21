@@ -82,16 +82,16 @@ internal fun ViewProxy(
     Row(
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        StatusItem(
-            modifier = Modifier.padding(end = MaterialTheme.keylines.content),
-            title = stringResource(R.string.hotspot_proxy_port),
-            value = httpPort,
-            valueStyle =
-                MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.W400,
-                    fontFamily = FontFamily.Monospace,
-                ),
-        )
+      StatusItem(
+          modifier = Modifier.padding(end = MaterialTheme.keylines.content),
+          title = stringResource(R.string.hotspot_proxy_port),
+          value = httpPort,
+          valueStyle =
+              MaterialTheme.typography.titleLarge.copy(
+                  fontWeight = FontWeight.W400,
+                  fontFamily = FontFamily.Monospace,
+              ),
+      )
     }
   }
 }

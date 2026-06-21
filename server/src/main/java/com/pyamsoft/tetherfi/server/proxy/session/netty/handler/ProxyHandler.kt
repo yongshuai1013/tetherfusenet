@@ -29,9 +29,9 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import io.netty.util.AttributeKey
 import io.netty.util.NetUtil
+import java.io.IOException
 import java.net.InetAddress
 import kotlinx.coroutines.CoroutineScope
-import java.io.IOException
 
 internal abstract class ProxyHandler
 internal constructor(

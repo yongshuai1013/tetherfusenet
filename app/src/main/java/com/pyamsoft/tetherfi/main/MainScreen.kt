@@ -47,36 +47,36 @@ import org.jetbrains.annotations.TestOnly
 
 @Composable
 fun MainScreen(
-  modifier: Modifier = Modifier,
-  appName: String,
-  state: MainViewState,
-  pagerState: PagerState,
-  allTabs: List<MainView>,
+    modifier: Modifier = Modifier,
+    appName: String,
+    state: MainViewState,
+    pagerState: PagerState,
+    allTabs: List<MainView>,
 
     // Main
-  onHttpEnabledChanged: (Boolean) -> Unit,
-  onSocksEnabledChanged: (Boolean) -> Unit,
-  onPortChanged: (Int) -> Unit,
+    onHttpEnabledChanged: (Boolean) -> Unit,
+    onSocksEnabledChanged: (Boolean) -> Unit,
+    onPortChanged: (Int) -> Unit,
 
     // Settings
-  onTabChanged: (MainView) -> Unit,
+    onTabChanged: (MainView) -> Unit,
 
     // Actions
-  onShowQRCode: () -> Unit,
-  onRefreshConnection: () -> Unit,
-  onJumpToHowTo: () -> Unit,
-  onLaunchIntent: (String) -> Unit,
-  onShowSlowSpeedHelp: () -> Unit,
-  onToggleProxy: () -> Unit,
+    onShowQRCode: () -> Unit,
+    onRefreshConnection: () -> Unit,
+    onJumpToHowTo: () -> Unit,
+    onLaunchIntent: (String) -> Unit,
+    onShowSlowSpeedHelp: () -> Unit,
+    onToggleProxy: () -> Unit,
 
     // Dialogs
-  onOpenNetworkError: () -> Unit,
-  onOpenHotspotError: () -> Unit,
-  onOpenProxyError: () -> Unit,
-  onOpenBroadcastError: () -> Unit,
+    onOpenNetworkError: () -> Unit,
+    onOpenHotspotError: () -> Unit,
+    onOpenProxyError: () -> Unit,
+    onOpenBroadcastError: () -> Unit,
 
     // Tile
-  onUpdateTile: (RunningStatus) -> Unit,
+    onUpdateTile: (RunningStatus) -> Unit,
 ) {
   val (snackbarError, setSnackbarError) = remember { mutableStateOf<ServerPortTypes?>(null) }
   val snackbarHostState = remember { SnackbarHostState() }
@@ -195,7 +195,7 @@ private fun PreviewMainScreen(
       onOpenHotspotError = {},
       onHttpEnabledChanged = {},
       onSocksEnabledChanged = {},
-    onPortChanged = {},
+      onPortChanged = {},
   )
 }
 

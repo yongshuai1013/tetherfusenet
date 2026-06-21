@@ -99,11 +99,10 @@ private data class TestChannelCreator(
     private val onChannelCreated: (Channel) -> Unit,
 ) : ChannelCreator {
 
-  override fun bind(onChannelInitialized: (Channel) -> Unit): ChannelFuture =
-      impl.bind { channel ->
-        onChannelCreated(channel)
-        onChannelInitialized(channel)
-      }
+  override fun bind(onChannelInitialized: (Channel) -> Unit): ChannelFuture = impl.bind { channel ->
+    onChannelCreated(channel)
+    onChannelInitialized(channel)
+  }
 
   override fun connect(hostName: String, port: Int, onChannelInitialized: (Channel) -> Unit) =
       impl.connect(

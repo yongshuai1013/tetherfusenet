@@ -35,9 +35,6 @@ import com.pyamsoft.tetherfi.behavior.sections.expert.renderExpertSettings
 import com.pyamsoft.tetherfi.behavior.sections.operating.renderOperatingSettings
 import com.pyamsoft.tetherfi.behavior.sections.tweaks.renderTweaks
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
-import com.pyamsoft.tetherfi.ui.ServerViewState
-import com.pyamsoft.tetherfi.ui.test.TestServerState
-import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
 
 private enum class BehaviorLoadedContentTypes {

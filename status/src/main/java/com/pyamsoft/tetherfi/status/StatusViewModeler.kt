@@ -81,7 +81,7 @@ internal constructor(
             ssid = false,
             password = false,
             band = false,
-          port = false,
+            port = false,
             isHttpEnabled = false,
             isSocksEnabled = false,
         )

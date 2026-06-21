@@ -41,36 +41,34 @@ internal constructor(
   // Use the MSF so that operations are thread safe
   private val job = MutableStateFlow<Job?>(null)
 
-  fun cancel() =
-      job.update { j ->
-        if (j == null) {
-          Timber.w { "cancel() called but no Job exists!" }
-        } else {
-          Timber.d { "Execute prepareStop() before cancelling service scope" }
-          stopper.prepareStop {
-            Timber.d { "Cancel Service Scope" }
-            j.cancel()
-          }
-        }
-        return@update null
+  fun cancel() = job.update { j ->
+    if (j == null) {
+      Timber.w { "cancel() called but no Job exists!" }
+    } else {
+      Timber.d { "Execute prepareStop() before cancelling service scope" }
+      stopper.prepareStop {
+        Timber.d { "Cancel Service Scope" }
+        j.cancel()
       }
+    }
+    return@update null
+  }
 
-  fun start(service: Service) =
-      job.update { j ->
-        if (j != null) {
-          Timber.w { "start() called but runner Job already exists!" }
-          return@update j
-        }
+  fun start(service: Service) = job.update { j ->
+    if (j != null) {
+      Timber.w { "start() called but runner Job already exists!" }
+      return@update j
+    }
 
-        // Start the notification immediately
-        val notificationWatcher = notificationLauncher.startForeground(service)
+    // Start the notification immediately
+    val notificationWatcher = notificationLauncher.startForeground(service)
 
-        return@update appScope.launch(context = Dispatchers.Default) {
-          val scope = this
+    return@update appScope.launch(context = Dispatchers.Default) {
+      val scope = this
 
-          Timber.d { "Service scope start() launched!" }
-          notificationWatcher.watch(scope = scope)
-          runner.start(scope = scope)
-        }
-      }
+      Timber.d { "Service scope start() launched!" }
+      notificationWatcher.watch(scope = scope)
+      runner.start(scope = scope)
+    }
+  }
 }

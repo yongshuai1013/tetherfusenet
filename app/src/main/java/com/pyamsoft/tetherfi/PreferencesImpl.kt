@@ -117,7 +117,8 @@ internal constructor(private val enforcer: ThreadEnforcer, context: Context) :
   private val preferences by lazy {
     val store = context.applicationContext.dataStore
     onClearOldPreferences(store)
-  return@lazy store}
+    return@lazy store
+  }
 
   // Keep this lazy so that the fallback password is always the same
   private val fallbackPassword by lazy { PasswordGenerator.generate() }
@@ -208,8 +209,7 @@ internal constructor(private val enforcer: ThreadEnforcer, context: Context) :
       )
 
   override fun listenForPortChanges(): Flow<Int> =
-      getPreference(key = PORT, value = ServerDefaults.HTTP_PORT)
-          .flowOn(context = Dispatchers.IO)
+      getPreference(key = PORT, value = ServerDefaults.HTTP_PORT).flowOn(context = Dispatchers.IO)
 
   override fun setPort(port: Int) =
       setPreference(
@@ -489,7 +489,6 @@ internal constructor(private val enforcer: ThreadEnforcer, context: Context) :
     private val HOLD_WAKELOCK = booleanPreferencesKey("key_hold_wakelock_1")
     private const val DEFAULT_HOLD_WAKELOCK = false
 
-
     private val KEEP_SCREEN_ON = booleanPreferencesKey("key_keep_screen_on_1")
     private const val DEFAULT_KEEP_SCREEN_ON = false
 
@@ -499,13 +498,14 @@ internal constructor(private val enforcer: ThreadEnforcer, context: Context) :
 
     private val SOCKET_TIMEOUT = longPreferencesKey("key_socket_timeout_1")
 
-    private val OldKeys = listOf(
-      // Server Limits
-      intPreferencesKey("key_server_perf_limit_1"),
-      // New Engine
-    booleanPreferencesKey("key_new_engine_1"),
-        // SOCKS specific port
-        intPreferencesKey("key_socks_port_1"),
-    )
+    private val OldKeys =
+        listOf(
+            // Server Limits
+            intPreferencesKey("key_server_perf_limit_1"),
+            // New Engine
+            booleanPreferencesKey("key_new_engine_1"),
+            // SOCKS specific port
+            intPreferencesKey("key_socks_port_1"),
+        )
   }
 }

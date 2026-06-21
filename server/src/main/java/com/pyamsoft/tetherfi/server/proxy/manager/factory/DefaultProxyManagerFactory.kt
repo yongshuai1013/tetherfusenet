@@ -77,11 +77,11 @@ internal constructor(
   }
 
   override suspend fun create(
-    type: SharedProxy.Type,
-    info: BroadcastNetworkStatus.ConnectionInfo.Connected,
-    port: Int,
-    isHttpEnabled: Boolean,
-    isSocksEnabled: Boolean
+      type: SharedProxy.Type,
+      info: BroadcastNetworkStatus.ConnectionInfo.Connected,
+      port: Int,
+      isHttpEnabled: Boolean,
+      isSocksEnabled: Boolean,
   ): ProxyManager =
       withContext(context = Dispatchers.Default) {
         return@withContext when (type) {

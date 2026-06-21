@@ -34,36 +34,36 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 
 @Composable
 fun MainContent(
-  modifier: Modifier = Modifier,
-  appName: String,
-  pagerState: PagerState,
-  state: ServerViewState,
-  allTabs: List<MainView>,
+    modifier: Modifier = Modifier,
+    appName: String,
+    pagerState: PagerState,
+    state: ServerViewState,
+    allTabs: List<MainView>,
 
     // Main
-  onHttpEnabledChanged: (Boolean) -> Unit,
-  onPortChanged: (Int) -> Unit,
-  onSocksEnabledChanged: (Boolean) -> Unit,
+    onHttpEnabledChanged: (Boolean) -> Unit,
+    onPortChanged: (Int) -> Unit,
+    onSocksEnabledChanged: (Boolean) -> Unit,
 
     // Actions
-  onShowQRCode: () -> Unit,
-  onRefreshConnection: () -> Unit,
-  onJumpToHowTo: () -> Unit,
-  onLaunchIntent: (String) -> Unit,
-  onShowSlowSpeedHelp: () -> Unit,
-  onToggleProxy: () -> Unit,
+    onShowQRCode: () -> Unit,
+    onRefreshConnection: () -> Unit,
+    onJumpToHowTo: () -> Unit,
+    onLaunchIntent: (String) -> Unit,
+    onShowSlowSpeedHelp: () -> Unit,
+    onToggleProxy: () -> Unit,
 
     // Dialogs
-  onOpenNetworkError: () -> Unit,
-  onOpenHotspotError: () -> Unit,
-  onOpenProxyError: () -> Unit,
-  onOpenBroadcastError: () -> Unit,
+    onOpenNetworkError: () -> Unit,
+    onOpenHotspotError: () -> Unit,
+    onOpenProxyError: () -> Unit,
+    onOpenBroadcastError: () -> Unit,
 
     // Tile
-  onUpdateTile: (RunningStatus) -> Unit,
+    onUpdateTile: (RunningStatus) -> Unit,
 
     // Error
-  onEnableChangeFailed: (ServerPortTypes) -> Unit,
+    onEnableChangeFailed: (ServerPortTypes) -> Unit,
 ) {
   val statusLazyListState = rememberLazyListState()
   val behaviorLazyListState = rememberLazyListState()
@@ -123,7 +123,7 @@ fun MainContent(
             onEnableChangeFailed = onEnableChangeFailed,
             onHttpEnabledChanged = onHttpEnabledChanged,
             onSocksEnabledChanged = onSocksEnabledChanged,
-          onPortChanged = onPortChanged,
+            onPortChanged = onPortChanged,
         )
       }
       MainView.CONNECTIONS -> {

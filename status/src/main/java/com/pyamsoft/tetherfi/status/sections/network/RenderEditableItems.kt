@@ -176,14 +176,14 @@ internal fun LazyListScope.renderEditableItems(
             onEnableChangeFailed = onEnableChangeFailed,
         )
 
-          EditHttpPort(
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .padding(horizontal = MaterialTheme.keylines.content)
-                      .padding(bottom = MaterialTheme.keylines.content),
-              serverViewState = serverViewState,
-              onPortChanged = onPortChanged,
-          )
+        EditHttpPort(
+            modifier =
+                Modifier.fillMaxWidth()
+                    .padding(horizontal = MaterialTheme.keylines.content)
+                    .padding(bottom = MaterialTheme.keylines.content),
+            serverViewState = serverViewState,
+            onPortChanged = onPortChanged,
+        )
       }
     }
   }
@@ -352,7 +352,7 @@ private fun PreviewEditableItems(
             },
         onHttpEnabledChanged = {},
         onSocksEnabledChanged = {},
-      onPortChanged = {},
+        onPortChanged = {},
         onSsidChanged = {},
         onPasswordChanged = {},
         onTogglePasswordVisibility = {},

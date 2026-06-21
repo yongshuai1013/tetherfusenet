@@ -112,17 +112,16 @@ internal constructor(
     Timber.d { "Attempt to purge old clients before $cutoffTime" }
 
     // "Live" client must have activity within 2 minutes
-    val newClients =
-        allowedClients.updateAndGet { list ->
-          list.filter { entry ->
-            val client = entry.value
-            val newEnough = client.mostRecentlySeen >= cutoffTime
-            if (!newEnough) {
-              Timber.d { "Client is too old: $client. Last seen ${client.mostRecentlySeen}" }
-            }
-            return@filter newEnough
-          }
+    val newClients = allowedClients.updateAndGet { list ->
+      list.filter { entry ->
+        val client = entry.value
+        val newEnough = client.mostRecentlySeen >= cutoffTime
+        if (!newEnough) {
+          Timber.d { "Client is too old: $client. Last seen ${client.mostRecentlySeen}" }
         }
+        return@filter newEnough
+      }
+    }
     blockedClients.update { blocked ->
       blocked.filter { entry ->
         // If this blocked client is still found in the "new client" list, keep it,

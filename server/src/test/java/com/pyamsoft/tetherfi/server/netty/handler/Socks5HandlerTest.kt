@@ -66,7 +66,7 @@ class Socks5HandlerTest {
 
       Socks5ProxyHandler.applyChannelAttributes(
           channel = channel,
-        client = context.resolver.ensure(context.channel.remoteAddress().address),
+          client = context.resolver.ensure(context.channel.remoteAddress().address),
       )
 
       val req =
