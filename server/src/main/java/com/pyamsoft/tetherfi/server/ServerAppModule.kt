@@ -30,7 +30,6 @@ import com.pyamsoft.tetherfi.server.clients.ClientManagerImpl
 import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.StartedClients
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
-import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
 import com.pyamsoft.tetherfi.server.lock.CPULocker
 import com.pyamsoft.tetherfi.server.lock.Locker
 import com.pyamsoft.tetherfi.server.lock.LockerImpl
@@ -70,12 +69,6 @@ abstract class ServerAppModule {
   internal abstract fun bindShutdownConsumer(
       impl: EventBus<ServerShutdownEvent>
   ): EventConsumer<ServerShutdownEvent>
-
-  @Binds
-  @CheckResult
-  internal abstract fun bindStopRequestConsumer(
-      impl: EventBus<ServerStopRequestEvent>
-  ): EventConsumer<ServerStopRequestEvent>
 
   // Prereqs
   @Binds
@@ -155,13 +148,6 @@ abstract class ServerAppModule {
     @JvmStatic
     @Singleton
     internal fun provideShutdownEventBus(): EventBus<ServerShutdownEvent> {
-      return EventBus.create()
-    }
-
-    @Provides
-    @JvmStatic
-    @Singleton
-    internal fun provideStopRequestEventBus(): EventBus<ServerStopRequestEvent> {
       return EventBus.create()
     }
   }

@@ -16,11 +16,9 @@
 
 package com.pyamsoft.tetherfi.server
 
-import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.tetherfi.core.AppCoroutineScope
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastStatus
-import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
 import com.pyamsoft.tetherfi.server.proxy.ProxyStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import javax.inject.Inject
@@ -34,17 +32,12 @@ internal constructor(
     private val appScope: AppCoroutineScope,
     private val proxy: ProxyStatus,
     private val wifiDirect: BroadcastStatus,
-    private val stopRequestBroadcaster: EventBus<ServerStopRequestEvent>,
 ) {
 
   private suspend fun beforeStop() {
     Timber.d { "Mark hotspot stopping" }
     proxy.set(RunningStatus.Stopping)
     wifiDirect.set(RunningStatus.Stopping)
-
-    // TODO(Peter): No longer used?
-    Timber.d { "Broadcast stop-request" }
-    stopRequestBroadcaster.emit(ServerStopRequestEvent)
   }
 
   fun prepareStop(onStopped: () -> Unit) {
